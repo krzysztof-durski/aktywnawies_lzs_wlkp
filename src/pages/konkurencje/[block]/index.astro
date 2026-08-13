@@ -1,0 +1,79 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import DocumentList from "../../../components/DocumentList.astro";
+import { listDisciplinesByBlock, listDocumentsByDiscipline, listDocumentsForDisciplines, type DocumentRow } from "../../../lib/db";
+import { KONKURENCJE_BLOCKS, isBlockSlug } from "../../../lib/nav";
+import { mediaUrl } from "../../../lib/media";
+
+const { block: blockSlug } = Astro.params;
+if (!blockSlug || !isBlockSlug(blockSlug)) return new Response("Not found", { status: 404 });
+
+const block = KONKURENCJE_BLOCKS.find((b) => b.slug === blockSlug)!;
+const { results: disciplines } = await listDisciplinesByBlock(env.DB, blockSlug);
+
+// Documents tagged with the block's own slug (not a specific discipline) — e.g.
+// "Druk zgłoszeń", "Klasyfikacja punktowa" — shown as general links for the block.
+const { results: blockDocuments } = await listDocumentsByDiscipline(env.DB, blockSlug);
+
+// One query for every discipline's Regulamin/Listy startowe/Wyniki, grouped below.
+const { results: disciplineDocuments } = await listDocumentsForDisciplines(
+  env.DB,
+  disciplines.map((d) => d.slug),
+);
+const byDisciplineAndCategory = new Map<string, DocumentRow>();
+for (const doc of disciplineDocuments) {
+  if (doc.discipline) byDisciplineAndCategory.set(`${doc.discipline}:${doc.category}`, doc);
+}
+---
+
+<BaseLayout title={block.title}>
+  <div class="container">
+    <p class="breadcrumb"><a href="/">Strona główna</a> / <a href="/konkurencje">Konkurencje</a></p>
+    <h1>{block.title}</h1>
+
+    {blockDocuments.length > 0 && (
+      <DocumentList documents={blockDocuments} mediaBaseUrl={env.MEDIA_BASE_URL} />
+    )}
+
+    <h2>Konkurencje</h2>
+    {disciplines.length === 0 ? (
+      <p class="empty-state">Lista konkurencji w tym bloku zostanie wkrótce uzupełniona.</p>
+    ) : (
+      <div class="table-scroll">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Konkurencja</th>
+              <th>Regulamin</th>
+              <th>Listy startowe</th>
+              <th>Wyniki</th>
+            </tr>
+          </thead>
+          <tbody>
+            {disciplines.map((d) => (
+              <tr>
+                <td>
+                  <a href={`/konkurencje/${block.slug}/${d.slug}`}>
+                    {d.cover_image_key && (
+                      <img
+                        src={mediaUrl(env.MEDIA_BASE_URL, d.cover_image_key)}
+                        alt=""
+                        style="width:32px;height:32px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:.5rem;"
+                      />
+                    )}
+                    {d.title}
+                  </a>
+                </td>
+                {["regulamin", "listy-startowe", "wyniki"].map((category) => {
+                  const doc = byDisciplineAndCategory.get(`${d.slug}:${category}`);
+                  return <td>{doc ? <a href={mediaUrl(env.MEDIA_BASE_URL, doc.file_key)}>Pobierz</a> : "—"}</td>;
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )}
+  </div>
+</BaseLayout>

@@ -1,0 +1,22 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import GalleryLightbox from "../../components/GalleryLightbox.astro";
+import { listMainGalleryImages } from "../../lib/db";
+
+const { results: images } = await listMainGalleryImages(env.DB);
+---
+
+<BaseLayout title="Główna galeria">
+  <div class="container">
+    <p class="breadcrumb"><a href="/">Strona główna</a> / <a href="/galeria">Galeria</a></p>
+    <h1>Główna galeria</h1>
+    <p>Wszystkie zdjęcia ze wszystkich albumów.</p>
+    <GalleryLightbox
+      images={images}
+      mediaBaseUrl={env.MEDIA_BASE_URL}
+      altFallback="Główna galeria"
+      emptyLabel="Brak zdjęć."
+    />
+  </div>
+</BaseLayout>

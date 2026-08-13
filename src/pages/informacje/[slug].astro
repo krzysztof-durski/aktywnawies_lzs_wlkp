@@ -1,0 +1,26 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocumentList from "../../components/DocumentList.astro";
+import { getPage, listDocumentsByCategory } from "../../lib/db";
+import { informacjeItem } from "../../lib/nav";
+
+const { slug } = Astro.params;
+const item = slug ? informacjeItem(slug) : undefined;
+if (!item) return new Response("Not found", { status: 404 });
+
+const page = item.kind === "page" ? await getPage(env.DB, item.slug) : null;
+const documents = item.kind === "document" ? (await listDocumentsByCategory(env.DB, item.slug)).results : [];
+---
+
+<BaseLayout title={item.title}>
+  <div class="container">
+    <p class="breadcrumb"><a href="/">Strona główna</a> / Informacje</p>
+    <h1>{item.title}</h1>
+    {item.kind === "page" ? (
+      page ? <div set:html={page.body_html} /> : <p class="empty-state">Treść w przygotowaniu.</p>
+    ) : (
+      <DocumentList documents={documents} mediaBaseUrl={env.MEDIA_BASE_URL} />
+    )}
+  </div>
+</BaseLayout>

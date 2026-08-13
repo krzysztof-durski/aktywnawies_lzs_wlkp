@@ -1,0 +1,30 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocumentList from "../../components/DocumentList.astro";
+import { listAllPublishedDocuments, type DocumentRow } from "../../lib/db";
+
+const { results: documents } = await listAllPublishedDocuments(env.DB);
+
+const grouped = documents.reduce<Record<string, DocumentRow[]>>((acc, doc) => {
+  (acc[doc.category] ??= []).push(doc);
+  return acc;
+}, {});
+const categories = Object.keys(grouped).sort();
+---
+
+<BaseLayout title="Do pobrania">
+  <div class="container">
+    <h1>Do pobrania</h1>
+    {categories.length === 0 ? (
+      <p class="empty-state">Brak materiałów do pobrania.</p>
+    ) : (
+      categories.map((category) => (
+        <section>
+          <h2>{category}</h2>
+          <DocumentList documents={grouped[category]} mediaBaseUrl={env.MEDIA_BASE_URL} />
+        </section>
+      ))
+    )}
+  </div>
+</BaseLayout>

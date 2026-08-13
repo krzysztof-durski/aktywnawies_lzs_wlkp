@@ -1,0 +1,29 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import KonkurencjeTiles from "../../components/KonkurencjeTiles.astro";
+import { listKonkurencjeTiles } from "../../lib/db";
+import { KONKURENCJE_BLOCKS } from "../../lib/nav";
+
+const { results: tiles } = await listKonkurencjeTiles(env.DB);
+---
+
+<BaseLayout title="Konkurencje">
+  <div class="container">
+    <h1>Konkurencje</h1>
+    <div class="card-grid">
+      {KONKURENCJE_BLOCKS.map((block) => (
+        <a class="card" href={`/konkurencje/${block.slug}`}>
+          <h3>{block.title}</h3>
+        </a>
+      ))}
+    </div>
+
+    {tiles.length > 0 && (
+      <>
+        <h2 style="margin-top:2rem;">Wybierz konkurencję</h2>
+        <KonkurencjeTiles tiles={tiles} mediaBaseUrl={env.MEDIA_BASE_URL} />
+      </>
+    )}
+  </div>
+</BaseLayout>

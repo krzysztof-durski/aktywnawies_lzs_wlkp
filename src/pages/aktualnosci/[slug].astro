@@ -1,0 +1,31 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getNewsBySlug } from "../../lib/db";
+import { mediaUrl } from "../../lib/media";
+
+const { slug } = Astro.params;
+const post = slug ? await getNewsBySlug(env.DB, slug) : null;
+if (!post) return new Response("Not found", { status: 404 });
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("pl-PL", { year: "numeric", month: "long", day: "numeric" });
+}
+---
+
+<BaseLayout title={post.title}>
+  <div class="container">
+    <p class="breadcrumb"><a href="/">Strona główna</a> / <a href="/aktualnosci">Aktualności</a></p>
+    <h1>{post.title}</h1>
+    <p class="doc-meta">{formatDate(post.published_at)}</p>
+    {post.cover_image_key && (
+      <img
+        src={mediaUrl(env.MEDIA_BASE_URL, post.cover_image_key)}
+        alt=""
+        style="width:100%;max-height:420px;object-fit:cover;border-radius:8px;margin-bottom:1.5rem;"
+      />
+    )}
+    <div set:html={post.body_html} />
+  </div>
+</BaseLayout>

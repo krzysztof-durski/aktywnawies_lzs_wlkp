@@ -1,0 +1,53 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import DocumentList from "../../../components/DocumentList.astro";
+import KonkurencjeTiles from "../../../components/KonkurencjeTiles.astro";
+import { getDiscipline, listDocumentsByDiscipline, listKonkurencjeTiles } from "../../../lib/db";
+import { KONKURENCJE_BLOCKS, isBlockSlug } from "../../../lib/nav";
+import { mediaUrl } from "../../../lib/media";
+
+const { block: blockSlug, discipline: disciplineSlug } = Astro.params;
+if (!blockSlug || !isBlockSlug(blockSlug) || !disciplineSlug) {
+  return new Response("Not found", { status: 404 });
+}
+
+const block = KONKURENCJE_BLOCKS.find((b) => b.slug === blockSlug)!;
+const discipline = await getDiscipline(env.DB, blockSlug, disciplineSlug);
+if (!discipline) return new Response("Not found", { status: 404 });
+
+const { results: documents } = await listDocumentsByDiscipline(env.DB, discipline.slug);
+const { results: tiles } = await listKonkurencjeTiles(env.DB);
+---
+
+<BaseLayout title={discipline.title}>
+  {discipline.cover_image_key ? (
+    <div
+      class="discipline-hero"
+      style={`background-image: linear-gradient(rgba(10,15,12,.15), rgba(10,15,12,.15)), url(${mediaUrl(env.MEDIA_BASE_URL, discipline.cover_image_key)})`}
+    >
+      <h1>{discipline.title}</h1>
+    </div>
+  ) : null}
+  <div class="container">
+    <p class="breadcrumb">
+      <a href="/">Strona główna</a> / <a href="/konkurencje">Konkurencje</a> /
+      <a href={`/konkurencje/${block.slug}`}>{block.title}</a>
+    </p>
+    {!discipline.cover_image_key && <h1>{discipline.title}</h1>}
+    {discipline.body_html ? (
+      <div set:html={discipline.body_html} />
+    ) : (
+      <p class="empty-state">Opis dyscypliny w przygotowaniu.</p>
+    )}
+    <h2>Materiały</h2>
+    <DocumentList documents={documents} mediaBaseUrl={env.MEDIA_BASE_URL} emptyLabel="Brak materiałów dla tej dyscypliny." />
+
+    {tiles.length > 0 && (
+      <>
+        <h2>Konkurencje</h2>
+        <KonkurencjeTiles tiles={tiles} mediaBaseUrl={env.MEDIA_BASE_URL} />
+      </>
+    )}
+  </div>
+</BaseLayout>

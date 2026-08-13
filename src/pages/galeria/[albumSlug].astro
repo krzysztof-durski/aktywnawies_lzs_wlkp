@@ -1,0 +1,27 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import GalleryLightbox from "../../components/GalleryLightbox.astro";
+import { getGalleryAlbum, listGalleryImages } from "../../lib/db";
+
+const { albumSlug } = Astro.params;
+const album = albumSlug ? await getGalleryAlbum(env.DB, albumSlug) : null;
+// Private albums (e.g. carousel-only staging) aren't directly browsable either.
+if (!album || album.is_private) return new Response("Not found", { status: 404 });
+
+const { results: images } = await listGalleryImages(env.DB, album.id);
+---
+
+<BaseLayout title={album.title}>
+  <div class="container">
+    <p class="breadcrumb"><a href="/">Strona główna</a> / <a href="/galeria">Galeria</a></p>
+    <h1>{album.title}</h1>
+    {album.description && <p>{album.description}</p>}
+    <GalleryLightbox
+      images={images}
+      mediaBaseUrl={env.MEDIA_BASE_URL}
+      altFallback={album.title}
+      emptyLabel="Brak zdjęć w tym albumie."
+    />
+  </div>
+</BaseLayout>

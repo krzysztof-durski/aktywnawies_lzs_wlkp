@@ -1,0 +1,15 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocumentList from "../../components/DocumentList.astro";
+import { listDocumentsByCategory } from "../../lib/db";
+
+const { results: documents } = await listDocumentsByCategory(env.DB, "klasyfikacje");
+---
+
+<BaseLayout title="Klasyfikacje">
+  <div class="container">
+    <h1>Klasyfikacje</h1>
+    <DocumentList documents={documents} mediaBaseUrl={env.MEDIA_BASE_URL} emptyLabel="Klasyfikacje zostaną opublikowane wkrótce." />
+  </div>
+</BaseLayout>

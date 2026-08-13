@@ -1,0 +1,21 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import NewsCard from "../../components/NewsCard.astro";
+import { listPublishedNews } from "../../lib/db";
+
+const { results: news } = await listPublishedNews(env.DB, 50);
+---
+
+<BaseLayout title="Aktualności">
+  <div class="container">
+    <h1>Aktualności</h1>
+    {news.length === 0 ? (
+      <p class="empty-state">Brak aktualności.</p>
+    ) : (
+      <div class="card-grid">
+        {news.map((post) => <NewsCard post={post} mediaBaseUrl={env.MEDIA_BASE_URL} />)}
+      </div>
+    )}
+  </div>
+</BaseLayout>

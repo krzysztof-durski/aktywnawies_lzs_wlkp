@@ -1,0 +1,63 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import NewsCard from "../components/NewsCard.astro";
+import Carousel from "../components/Carousel.astro";
+import { listPublishedNews, listFeaturedImages } from "../lib/db";
+
+const { results: news } = await listPublishedNews(env.DB, 3);
+const { results: featuredImages } = await listFeaturedImages(env.DB);
+---
+
+<BaseLayout title="Strona główna">
+  <section class="hero">
+    <div class="hero__inner">
+      <h1>XXIX Ogólnopolskie Igrzyska LZS</h1>
+      <p>
+        Ogólnopolskie Igrzyska Ludowych Zespołów Sportowych to największe w Polsce święto sportu
+        wiejskiego i lokalnego. Od blisko trzech dekad gromadzą w jednym miejscu reprezentacje
+        wszystkich województw, które rywalizują zarówno w konkurencjach sportowych, jak i
+        rekreacyjnych.
+      </p>
+      <p class="dates">Spała, 27–29 sierpnia 2026</p>
+    </div>
+  </section>
+
+  <Carousel images={featuredImages} mediaBaseUrl={env.MEDIA_BASE_URL} />
+
+  <div class="container">
+    <section>
+      <h2>Aktualności</h2>
+      {news.length === 0 ? (
+        <p class="empty-state">Brak aktualności.</p>
+      ) : (
+        <div class="card-grid">
+          {news.map((post) => <NewsCard post={post} mediaBaseUrl={env.MEDIA_BASE_URL} />)}
+        </div>
+      )}
+      <p><a href="/aktualnosci">Wszystkie aktualności &rarr;</a></p>
+    </section>
+
+    <section>
+      <h2>Skróty</h2>
+      <div class="card-grid">
+        <a class="card" href="/konkurencje">
+          <h3>Konkurencje</h3>
+          <p>Bloki sportowy, rekreacyjny i integracyjny.</p>
+        </a>
+        <a class="card" href="/klasyfikacje">
+          <h3>Klasyfikacje</h3>
+          <p>Wyniki i klasyfikacje zawodów.</p>
+        </a>
+        <a class="card" href="/galeria">
+          <h3>Galeria</h3>
+          <p>Zdjęcia z Igrzysk.</p>
+        </a>
+        <a class="card" href="/do-pobrania">
+          <h3>Do pobrania</h3>
+          <p>Materiały i dokumenty.</p>
+        </a>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,42 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import GalleryLightbox from "../../components/GalleryLightbox.astro";
+import { getGalleryAlbumCoverImage, getMainGalleryCoverImage, listMainGalleryImages, listPublicGalleryAlbums } from "../../lib/db";
+import { mediaUrl } from "../../lib/media";
+
+const { results: albums } = await listPublicGalleryAlbums(env.DB);
+const covers = await Promise.all(albums.map((album) => getGalleryAlbumCoverImage(env.DB, album)));
+const mainCover = await getMainGalleryCoverImage(env.DB);
+const { results: mainImages } = await listMainGalleryImages(env.DB);
+---
+
+<BaseLayout title="Galeria">
+  <div class="container">
+    <h1>Galeria</h1>
+    {albums.length === 0 && !mainCover ? (
+      <p class="empty-state">Galeria zostanie uzupełniona po wydarzeniu.</p>
+    ) : (
+      <div class="gallery-grid">
+        <a href="/galeria/glowny">
+          {mainCover && <img src={mediaUrl(env.MEDIA_BASE_URL, mainCover.file_key)} alt="Główna galeria" loading="lazy" />}
+          <p><strong>Główna galeria</strong></p>
+        </a>
+        {albums.map((album, i) => (
+          <a href={`/galeria/${album.slug}`}>
+            {covers[i] && <img src={mediaUrl(env.MEDIA_BASE_URL, covers[i]!.file_key)} alt={album.title} loading="lazy" />}
+            <p>{album.title}</p>
+          </a>
+        ))}
+      </div>
+    )}
+
+    <h2 style="margin-top:2.5rem;">Główna galeria</h2>
+    <GalleryLightbox
+      images={mainImages}
+      mediaBaseUrl={env.MEDIA_BASE_URL}
+      altFallback="Główna galeria"
+      emptyLabel="Brak zdjęć w głównej galerii."
+    />
+  </div>
+</BaseLayout>
