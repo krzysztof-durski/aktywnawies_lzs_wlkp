@@ -1,0 +1,58 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+const admin = Astro.locals.admin;
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} — Panel administracyjny</title>
+  </head>
+  <body>
+    <div class="admin-shell">
+      <aside class="admin-sidebar">
+        <p><strong>Panel admina</strong></p>
+        {admin && <p style="opacity:.75;font-size:.85rem;">{admin.username}</p>}
+        <nav>
+          <a href="/admin">Pulpit</a>
+          <a href="/admin/news">Aktualności</a>
+          <a href="/admin/documents">Dokumenty</a>
+          <a href="/admin/gallery">Galeria</a>
+          <a href="/admin/gallery/karuzela">Karuzela zdjęć</a>
+          {admin?.role === "superadmin" && (
+            <>
+              <p style="margin:1rem 0 .25rem;opacity:.6;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;">Superadmin</p>
+              <a href="/admin/pages">Strony</a>
+              <a href="/admin/konkurencje">Konkurencje</a>
+              <a href="/admin/uzytkownicy">Użytkownicy</a>
+              <a href="/admin/dziennik">Dziennik zdarzeń</a>
+              <a href="/admin/ustawienia">Ustawienia strony</a>
+            </>
+          )}
+        </nav>
+        <form method="POST" action={`/api/admin/logout?csrf_token=${csrfToken}`} style="margin-top:1.5rem;">
+          <button type="submit" class="danger">Wyloguj</button>
+        </form>
+      </aside>
+      <div class="admin-main">
+        <slot />
+      </div>
+    </div>
+    <script>
+      document.querySelectorAll<HTMLFormElement>("form[data-confirm]").forEach((form) => {
+        form.addEventListener("submit", (e) => {
+          if (!confirm(form.dataset.confirm)) e.preventDefault();
+        });
+      });
+    </script>
+  </body>
+</html>

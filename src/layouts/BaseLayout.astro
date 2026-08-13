@@ -1,0 +1,107 @@
+---
+import { env } from "cloudflare:workers";
+import "../styles/global.css";
+import { INFORMACJE_ITEMS, KONKURENCJE_BLOCKS } from "../lib/nav";
+import { listAllDisciplines, type Discipline } from "../lib/db";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "XXIX Ogólnopolskie Igrzyska LZS – Spała 2026" } = Astro.props;
+
+const { results: allDisciplines } = await listAllDisciplines(env.DB);
+const disciplinesByBlock = allDisciplines.reduce<Record<string, Discipline[]>>((acc, d) => {
+  (acc[d.block] ??= []).push(d);
+  return acc;
+}, {});
+---
+
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title} — XXIX Igrzyska LZS Spała 2026</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header__bar">
+        <a class="site-logo" href="/">Igrzyska Spała 2026</a>
+        <button type="button" class="nav-toggle" aria-expanded="false" aria-controls="site-nav">
+          <span class="sr-only">Menu</span>
+          <span class="nav-toggle__bars" aria-hidden="true"></span>
+        </button>
+        <nav class="site-nav" id="site-nav" aria-label="Główna nawigacja">
+          <div class="nav-dropdown">
+            <button type="button" class="nav-dropdown__trigger" aria-haspopup="true" aria-expanded="false">Informacje</button>
+            <div class="dropdown">
+              {INFORMACJE_ITEMS.map((item) => (
+                <a href={`/informacje/${item.slug}`}>{item.title}</a>
+              ))}
+            </div>
+          </div>
+          <a href="/aktualnosci">Aktualności</a>
+          <div class="nav-dropdown">
+            <button type="button" class="nav-dropdown__trigger" aria-haspopup="true" aria-expanded="false">Konkurencje</button>
+            <div class="dropdown">
+              {KONKURENCJE_BLOCKS.map((block) => {
+                const disciplines = disciplinesByBlock[block.slug] ?? [];
+                return (
+                  <div class:list={["dropdown-item", { "has-flyout": disciplines.length > 0 }]}>
+                    <a href={`/konkurencje/${block.slug}`}>{block.title}</a>
+                    {disciplines.length > 0 && (
+                      <div class="flyout">
+                        {disciplines.map((d) => (
+                          <a href={`/konkurencje/${block.slug}/${d.slug}`}>{d.title}</a>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <a href="/klasyfikacje">Klasyfikacje</a>
+          <a href="/do-pobrania">Do pobrania</a>
+          <a href="/galeria">Galeria</a>
+          <a href="/kontakt">Kontakt</a>
+        </nav>
+      </div>
+    </header>
+    <script>
+      const toggle = document.querySelector<HTMLButtonElement>(".nav-toggle");
+      const nav = document.getElementById("site-nav");
+      toggle?.addEventListener("click", () => {
+        const isOpen = nav?.classList.toggle("is-open");
+        toggle.setAttribute("aria-expanded", String(Boolean(isOpen)));
+      });
+
+      // Informacje/Konkurencje open on hover only (pure CSS, see global.css) — the
+      // trigger isn't a link and does nothing on click. On touch devices there is
+      // no hover at all, so this same click still needs to open the dropdown there;
+      // matchMedia keeps it from doing anything on devices that do support hover.
+      if (window.matchMedia("(hover: none)").matches) {
+        document.querySelectorAll<HTMLButtonElement>(".nav-dropdown__trigger").forEach((trigger) => {
+          trigger.addEventListener("click", () => {
+            const parent = trigger.closest(".nav-dropdown");
+            const isOpen = parent?.classList.toggle("is-open");
+            trigger.setAttribute("aria-expanded", String(Boolean(isOpen)));
+          });
+        });
+      }
+    </script>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <span>&copy; {new Date().getFullYear()} Krajowe Zrzeszenie Ludowe Zespoły Sportowe</span>
+      </div>
+    </footer>
+  </body>
+</html>

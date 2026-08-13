@@ -1,0 +1,95 @@
+---
+import type { GalleryImage } from "../../lib/db";
+import { mediaUrl } from "../../lib/media";
+
+interface Props {
+  images: GalleryImage[];
+  mediaBaseUrl: string;
+  csrfToken?: string;
+  /** Where the bulk-save / delete actions redirect back to. */
+  returnTo: string;
+}
+
+const { images, mediaBaseUrl, csrfToken, returnTo } = Astro.props;
+---
+
+{images.length === 0 ? (
+  <p class="empty-state">Brak zdjęć.</p>
+) : (
+  <>
+    <form method="POST" id="gallery-bulk-form" action={`/api/admin/gallery/images/bulk-update?csrf_token=${csrfToken}`}>
+      <input type="hidden" name="return_to" value={returnTo} />
+      <ul class="gallery-manage-list">
+        {images.map((img) => (
+          <li class="gallery-manage-item">
+            <input type="hidden" name="image_ids" value={img.id} />
+            <img src={mediaUrl(mediaBaseUrl, img.thumb_key ?? img.file_key)} alt={img.caption ?? ""} loading="lazy" />
+            <details class="gallery-manage-item__name">
+              <summary>Edytuj nazwę: <strong>{img.caption || `Zdjęcie #${img.id}`}</strong></summary>
+              <span class="gallery-manage-item__name-edit">
+                <input
+                  type="text"
+                  name={`caption_${img.id}`}
+                  value={img.caption ?? ""}
+                  placeholder={`Zdjęcie #${img.id}`}
+                  data-original={img.caption ?? ""}
+                />
+                <button type="button" class="gallery-manage-item__name-tick" aria-label="Potwierdź nazwę">✓</button>
+              </span>
+            </details>
+            <label class="gallery-manage-item__check">
+              <input type="checkbox" name={`featured_${img.id}`} checked={!!img.featured} />
+              Wyróżnij
+            </label>
+            <button type="submit" form={`delete-image-${img.id}`} class="danger">
+              Usuń
+            </button>
+          </li>
+        ))}
+      </ul>
+      <button type="submit" style="margin-top:1rem;">Zapisz zaznaczone</button>
+    </form>
+
+    {images.map((img) => (
+      <form
+        id={`delete-image-${img.id}`}
+        method="POST"
+        action={`/api/admin/gallery/images/${img.id}?csrf_token=${csrfToken}`}
+        data-confirm="Na pewno usunąć to zdjęcie?"
+        hidden
+      >
+        <input type="hidden" name="intent" value="delete" />
+        <input type="hidden" name="return_to" value={returnTo} />
+      </form>
+    ))}
+
+    <script>
+      // The tick only confirms the pending edit locally (updates the collapsed
+      // summary + clears the "changed" state) — it doesn't save by itself.
+      // Persisting still happens once, in bulk, via "Zapisz zaznaczone" below,
+      // same as every other field in this list.
+      document.querySelectorAll<HTMLInputElement>(".gallery-manage-item__name-edit input[data-original]").forEach((input) => {
+        const tick = input.nextElementSibling as HTMLButtonElement | null;
+        const details = input.closest("details");
+        const summaryStrong = details?.querySelector("summary strong");
+        if (!tick) return;
+
+        const isChanged = () => input.value.trim() !== (input.dataset.original ?? "").trim();
+        const refreshTick = () => {
+          tick.style.visibility = isChanged() ? "visible" : "hidden";
+        };
+
+        input.addEventListener("input", refreshTick);
+        refreshTick();
+
+        tick.addEventListener("click", () => {
+          const value = input.value.trim();
+          if (summaryStrong) summaryStrong.textContent = value || input.placeholder;
+          input.dataset.original = value;
+          refreshTick();
+          if (details) details.open = false;
+        });
+      });
+    </script>
+  </>
+)}

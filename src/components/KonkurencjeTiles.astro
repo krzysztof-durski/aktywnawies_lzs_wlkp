@@ -1,0 +1,22 @@
+---
+import type { KonkurencjeTile } from "../lib/db";
+import { mediaUrl } from "../lib/media";
+
+interface Props {
+  tiles: KonkurencjeTile[];
+  mediaBaseUrl: string;
+}
+
+const { tiles, mediaBaseUrl } = Astro.props;
+---
+
+{tiles.length > 0 && (
+  <div class="tile-grid">
+    {tiles.map((tile) => (
+      <a class="tile-grid__item" href={tile.link_url}>
+        {tile.image_key && <img src={mediaUrl(mediaBaseUrl, tile.image_key)} alt="" loading="lazy" />}
+        <span>{tile.title}</span>
+      </a>
+    ))}
+  </div>
+)}

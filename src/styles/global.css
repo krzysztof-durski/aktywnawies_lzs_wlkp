@@ -1,0 +1,963 @@
+:root {
+  --color-forest: #1b3a2b;
+  --color-forest-dark: #122a1e;
+  --color-gold: #c9a227;
+  --color-text: #1f2620;
+  --color-text-muted: #55625a;
+  --color-bg: #ffffff;
+  --color-bg-alt: #f4f6f3;
+  --color-border: #dfe5df;
+  --radius: 6px;
+  --max-width: 1120px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.55;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+a {
+  color: var(--color-forest);
+}
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* Header / nav */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.site-header__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  padding: 0.9rem 1.25rem;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.site-logo {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: var(--color-gold);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.nav-toggle__bars,
+.nav-toggle__bars::before,
+.nav-toggle__bars::after {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--color-forest);
+  border-radius: 2px;
+}
+
+.nav-toggle__bars::before,
+.nav-toggle__bars::after {
+  content: "";
+  position: relative;
+}
+
+.nav-toggle__bars::before {
+  top: -6px;
+}
+
+.nav-toggle__bars::after {
+  top: 4px;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: center;
+}
+
+.site-nav a {
+  color: var(--color-forest);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  display: inline-block;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.site-nav a:hover,
+.site-nav a:focus-visible {
+  background-color: var(--color-forest);
+  color: #fff;
+}
+
+.site-nav .nav-dropdown {
+  position: relative;
+  /* Bridges the trigger-to-menu gap on hover: the hover chain stays "on" across
+     this invisible padding, and .dropdown below is flush against it (no
+     margin-top), so there's no dead zone the pointer can slip through. */
+  padding-bottom: 0.6rem;
+  margin-bottom: -0.6rem;
+}
+
+.site-nav .nav-dropdown__trigger {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-forest);
+  font-weight: 500;
+  font: inherit;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.site-nav .nav-dropdown:hover > .nav-dropdown__trigger,
+.site-nav .nav-dropdown__trigger:focus-visible,
+.site-nav .nav-dropdown.is-open > .nav-dropdown__trigger {
+  background-color: var(--color-forest);
+  color: #fff;
+}
+
+.site-nav .nav-dropdown__trigger::after {
+  content: " ▾";
+  font-size: 0.7em;
+}
+
+.site-nav .dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 20;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  min-width: 220px;
+  padding: 0.4rem 0;
+  display: none;
+}
+
+/* Desktop: pure CSS hover (no JS needed). Mobile/touch: the click handler in
+   BaseLayout.astro toggles `.is-open` on the parent, since touch never fires :hover.
+   :has(:focus-visible) (not :focus-within) keeps keyboard tab-navigation working
+   without also keeping the menu stuck open after a mouse click — a plain click
+   focuses the button too, but browsers don't mark that focus as "visible". */
+.site-nav .nav-dropdown:hover > .dropdown,
+.site-nav .nav-dropdown:has(:focus-visible) > .dropdown,
+.site-nav .nav-dropdown.is-open > .dropdown {
+  display: block;
+}
+
+.site-nav .dropdown a {
+  display: block;
+  padding: 0.5rem 1rem;
+  white-space: nowrap;
+}
+
+/* Nested flyout (Konkurencje block -> its disciplines). Hover-only enhancement;
+   touch users reach the same disciplines via the block's own landing page. */
+
+.site-nav .dropdown-item {
+  position: relative;
+}
+
+.site-nav .dropdown-item.has-flyout > a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.site-nav .dropdown-item.has-flyout > a::after {
+  content: "▸";
+  font-size: 0.7em;
+}
+
+.site-nav .dropdown-item .flyout {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  z-index: 30;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  min-width: 200px;
+  padding: 0.4rem 0;
+  display: none;
+}
+
+.site-nav .dropdown-item:hover > .flyout,
+.site-nav .dropdown-item:has(:focus-visible) > .flyout {
+  display: block;
+}
+
+.site-nav .dropdown-item .flyout a {
+  display: block;
+  padding: 0.5rem 1rem;
+  white-space: nowrap;
+}
+
+/* Small screens: hamburger toggle, full-width stacked menu, dropdowns flow
+   inline instead of floating (avoids off-screen overlays on narrow viewports). */
+@media (max-width: 780px) {
+  .nav-toggle {
+    display: flex;
+  }
+
+  .site-nav {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0;
+    border-top: 1px solid var(--color-border);
+    padding-top: 0.5rem;
+  }
+
+  .site-nav.is-open {
+    display: flex;
+  }
+
+  .site-nav > a,
+  .site-nav .nav-dropdown__trigger {
+    padding: 0.75rem 0.5rem;
+    border-radius: var(--radius);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .site-nav .nav-dropdown {
+    padding-bottom: 0;
+    margin-bottom: 0;
+  }
+
+  .site-nav .dropdown {
+    position: static;
+    box-shadow: none;
+    border: none;
+    border-radius: 0;
+    min-width: 0;
+    padding: 0 0 0 1rem;
+  }
+
+  .site-nav .dropdown-item .flyout {
+    position: static;
+    box-shadow: none;
+    border: none;
+    padding: 0 0 0 1rem;
+    min-width: 0;
+  }
+
+  .site-nav .dropdown-item.has-flyout > a::after {
+    content: "";
+  }
+}
+
+/* Hero */
+
+.hero {
+  background: linear-gradient(160deg, var(--color-forest) 0%, var(--color-forest-dark) 100%);
+  color: #fff;
+  padding: 3rem 1.25rem;
+}
+
+.hero__inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.hero h1 {
+  color: var(--color-gold);
+  font-size: 1.9rem;
+  margin: 0 0 0.5rem;
+}
+
+.hero p {
+  max-width: 60ch;
+  color: #e7ede8;
+}
+
+.hero .dates {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-gold);
+  margin-top: 1rem;
+}
+
+/* Discipline page hero banner (photo + title, set via admin-uploaded cover image) */
+
+.discipline-hero {
+  background-size: cover;
+  background-position: center;
+  background-color: var(--color-forest-dark);
+  padding: 4rem 1.25rem;
+  text-align: center;
+}
+
+.discipline-hero h1 {
+  display: inline-block;
+  color: #fff;
+  background: rgba(10, 15, 12, 0.55);
+  padding: 0.6rem 1.5rem;
+  border-radius: var(--radius);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Photo tile grid (Konkurencje quick-links) */
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.tile-grid__item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.6rem 1rem;
+  color: var(--color-forest);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.tile-grid__item:hover {
+  background: var(--color-bg-alt);
+  text-decoration: none;
+}
+
+.tile-grid__item img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+
+/* Content */
+
+main {
+  padding: 2.5rem 0;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  background: var(--color-bg-alt);
+}
+
+.card h3 {
+  margin-top: 0;
+}
+
+.doc-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.doc-list li {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+}
+
+.doc-list .doc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.doc-list .doc-preview {
+  width: 100%;
+  height: 75vh;
+  max-height: 800px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-top: 0.85rem;
+}
+
+.doc-list .doc-meta {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.gallery-grid img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.gallery-thumb {
+  display: block;
+  cursor: zoom-in;
+}
+
+/* Lightbox */
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(10, 15, 12, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox[hidden] {
+  display: none;
+}
+
+.lightbox-figure {
+  margin: 0;
+  max-width: min(90vw, 1100px);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lightbox-img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+}
+
+.lightbox-caption {
+  color: #e7ede8;
+  font-size: 0.9rem;
+  text-align: center;
+  min-height: 1.2em;
+}
+
+.lightbox-close,
+.lightbox-prev,
+.lightbox-next {
+  position: fixed;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-close:hover,
+.lightbox-prev:hover,
+.lightbox-next:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.lightbox-close {
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+.lightbox-prev {
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.lightbox-next {
+  right: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+@media (max-width: 640px) {
+  .lightbox-prev,
+  .lightbox-next {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+  .lightbox-prev {
+    left: 0.5rem;
+  }
+  .lightbox-next {
+    right: 0.5rem;
+  }
+  .lightbox-close {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+}
+
+/* Carousel (homepage "Wyróżnij" strip) — full-width band right under the header,
+   inner content width-matched to the rest of the site via .carousel-inner. */
+
+.carousel {
+  width: 100%;
+  background: var(--color-bg-alt);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.carousel-inner {
+  position: relative;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.carousel-track {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 1.5rem 3rem;
+  scrollbar-width: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-slide {
+  flex: 0 0 auto;
+  width: min(420px, 80vw);
+  scroll-snap-align: start;
+  display: block;
+  cursor: zoom-in;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  display: block;
+}
+
+/* Marked "Wyświetl samodzielnie" in the Karuzela panel — fills the visible
+   track width so no neighboring slides peek in on either side. */
+.carousel-slide--full {
+  width: calc(100% - 6rem);
+  scroll-snap-align: center;
+}
+
+.carousel-prev,
+.carousel-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 1.3rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.carousel:hover .carousel-prev,
+.carousel:hover .carousel-next,
+.carousel:focus-within .carousel-prev,
+.carousel:focus-within .carousel-next {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.carousel-prev {
+  left: 0.75rem;
+}
+
+.carousel-next {
+  right: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .carousel-track {
+    padding: 1rem 1.5rem;
+  }
+  .carousel-slide--full {
+    width: calc(100% - 3rem);
+  }
+  .carousel-slide img {
+    height: 240px;
+  }
+  .carousel-prev {
+    left: 0.25rem;
+  }
+  .carousel-next {
+    right: 0.25rem;
+  }
+}
+
+.breadcrumb {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.breadcrumb a {
+  color: var(--color-text-muted);
+}
+
+.empty-state {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* Footer */
+
+.site-footer {
+  border-top: 1px solid var(--color-border);
+  background: var(--color-bg-alt);
+  padding: 1.5rem 1.25rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.site-footer__inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  justify-content: space-between;
+}
+
+.site-footer a {
+  color: var(--color-text-muted);
+}
+
+/* Forms (admin) */
+
+form.stacked {
+  display: grid;
+  gap: 1rem;
+  max-width: 560px;
+}
+
+form.stacked label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+form.stacked input,
+form.stacked textarea,
+form.stacked select {
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font: inherit;
+}
+
+form.stacked textarea {
+  min-height: 200px;
+  font-family: ui-monospace, monospace;
+}
+
+button,
+.button {
+  background: var(--color-forest);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-block;
+}
+
+button.secondary,
+.button.secondary {
+  background: transparent;
+  color: var(--color-forest);
+  border: 1px solid var(--color-forest);
+}
+
+button.danger {
+  background: #a33a3a;
+}
+
+.form-error {
+  background: #fbeaea;
+  border: 1px solid #e3a5a5;
+  color: #8a2c2c;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+}
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  background: var(--color-forest-dark);
+  color: #fff;
+  padding: 1.5rem 1rem;
+}
+
+.admin-sidebar a {
+  color: #dfe8e1;
+  display: block;
+  padding: 0.5rem 0.25rem;
+  text-decoration: none;
+}
+
+.admin-sidebar a:hover {
+  color: var(--color-gold);
+}
+
+.admin-main {
+  padding: 2rem;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table.admin-table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table.admin-table th,
+table.admin-table td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.carousel-order-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+  max-width: 720px;
+}
+
+.carousel-order-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  background: var(--color-bg);
+  cursor: grab;
+}
+
+.carousel-order-item:active {
+  cursor: grabbing;
+}
+
+.carousel-order-item__handle {
+  color: var(--color-text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.carousel-order-item img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+
+.carousel-order-item__caption {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.carousel-order-item__buttons {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.carousel-order-item__buttons button {
+  padding: 0.3rem 0.6rem;
+}
+
+.gallery-manage-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.gallery-manage-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  flex-wrap: wrap;
+}
+
+.gallery-manage-item img {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  flex-shrink: 0;
+}
+
+.gallery-manage-item__name {
+  flex: 1 1 220px;
+}
+
+.gallery-manage-item__name summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  list-style: none;
+}
+
+.gallery-manage-item__name summary:hover {
+  text-decoration: underline;
+}
+
+.gallery-manage-item__name summary::-webkit-details-marker {
+  display: none;
+}
+
+.gallery-manage-item__name summary strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.gallery-manage-item__name-edit {
+  margin-top: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.gallery-manage-item__name-edit input {
+  flex: 1;
+  font-size: 0.95rem;
+  color: var(--color-text);
+}
+
+.gallery-manage-item__name-tick {
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: #256029;
+  font-weight: 700;
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0.3rem 0.5rem;
+  cursor: pointer;
+  visibility: hidden;
+}
+
+.gallery-manage-item__name-tick:hover {
+  background: #e8f5ea;
+  border-color: #a8d5b0;
+}
+
+.gallery-manage-item__check {
+  font-weight: 400;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.gallery-manage-item__check input {
+  width: auto;
+}

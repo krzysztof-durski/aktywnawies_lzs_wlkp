@@ -1,0 +1,37 @@
+---
+import type { GalleryImage } from "../lib/db";
+import { mediaUrl } from "../lib/media";
+import LightboxOverlay from "./LightboxOverlay.astro";
+
+interface Props {
+  images: GalleryImage[];
+  mediaBaseUrl: string;
+  altFallback: string;
+  emptyLabel?: string;
+}
+
+const { images, mediaBaseUrl, altFallback, emptyLabel = "Brak zdjęć." } = Astro.props;
+---
+
+{images.length === 0 ? (
+  <p class="empty-state">{emptyLabel}</p>
+) : (
+  <div class="gallery-grid">
+    {images.map((img) => (
+      <a
+        href={mediaUrl(mediaBaseUrl, img.file_key)}
+        class="gallery-thumb"
+        data-caption={img.caption ?? ""}
+        rel="noopener"
+      >
+        <img
+          src={mediaUrl(mediaBaseUrl, img.thumb_key ?? img.file_key)}
+          alt={img.caption ?? altFallback}
+          loading="lazy"
+        />
+      </a>
+    ))}
+  </div>
+)}
+
+{images.length > 0 && <LightboxOverlay />}

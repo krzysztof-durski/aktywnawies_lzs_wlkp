@@ -1,0 +1,129 @@
+---
+import type { GalleryImage } from "../lib/db";
+import { mediaUrl } from "../lib/media";
+import LightboxOverlay from "./LightboxOverlay.astro";
+
+interface Props {
+  images: GalleryImage[];
+  mediaBaseUrl: string;
+}
+
+const { images, mediaBaseUrl } = Astro.props;
+---
+
+{images.length > 0 && (
+  <div class="carousel">
+    <div class="carousel-inner">
+      <button type="button" class="carousel-prev" aria-label="Poprzednie zdjęcie">&lsaquo;</button>
+      <div class="carousel-track" id="carousel-track">
+        {images.map((img) => (
+          <a
+            href={mediaUrl(mediaBaseUrl, img.file_key)}
+            class:list={["gallery-thumb", "carousel-slide", { "carousel-slide--full": !!img.featured_full_width }]}
+            data-caption={img.caption ?? ""}
+          >
+            <img src={mediaUrl(mediaBaseUrl, img.thumb_key ?? img.file_key)} alt={img.caption ?? ""} loading="lazy" />
+          </a>
+        ))}
+      </div>
+      <button type="button" class="carousel-next" aria-label="Następne zdjęcie">&rsaquo;</button>
+    </div>
+    <LightboxOverlay />
+  </div>
+)}
+
+<script>
+  const track = document.getElementById("carousel-track");
+  const carousel = track?.closest(".carousel");
+  if (track && carousel) {
+    const realSlides = Array.from(track.children) as HTMLElement[];
+
+    // Clone the first/last real slide onto the opposite end so wrapping from
+    // last->first (or first->last) keeps scrolling in the same direction
+    // instead of animating backwards across every slide. Once the smooth
+    // scroll lands on a clone, we silently (no animation) snap back to the
+    // matching real slide — the loop looks continuous, never a jump.
+    const loop = realSlides.length > 1;
+    let slides = realSlides;
+    let offset = 0;
+    if (loop) {
+      const firstClone = realSlides[0].cloneNode(true) as HTMLElement;
+      const lastClone = realSlides[realSlides.length - 1].cloneNode(true) as HTMLElement;
+      for (const clone of [firstClone, lastClone]) {
+        clone.setAttribute("aria-hidden", "true");
+        clone.setAttribute("tabindex", "-1");
+        clone.style.pointerEvents = "none";
+      }
+      track.insertBefore(lastClone, track.firstChild);
+      track.appendChild(firstClone);
+      slides = Array.from(track.children) as HTMLElement[];
+      offset = 1;
+      track.scrollLeft = slides[offset].offsetLeft;
+    }
+
+    function currentIndex(): number {
+      let idx = 0;
+      let best = Infinity;
+      slides.forEach((el, i) => {
+        const diff = Math.abs(el.offsetLeft - track!.scrollLeft);
+        if (diff < best) {
+          best = diff;
+          idx = i;
+        }
+      });
+      return idx;
+    }
+
+    function goToSlideIndex(index: number, smooth: boolean) {
+      track!.scrollTo({ left: slides[index].offsetLeft, behavior: smooth ? "smooth" : "auto" });
+    }
+
+    function step(direction: 1 | -1) {
+      goToSlideIndex(currentIndex() + direction, true);
+    }
+
+    let settleTimer: number | undefined;
+    function handleSettled() {
+      if (!loop) return;
+      const idx = currentIndex();
+      if (idx === slides.length - 1) {
+        goToSlideIndex(offset, false); // landed on the first-slide clone -> snap to the real first slide
+      } else if (idx === 0) {
+        goToSlideIndex(slides.length - 1 - offset, false); // landed on the last-slide clone -> snap to the real last slide
+      }
+    }
+    track.addEventListener("scroll", () => {
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(handleSettled, 150);
+    });
+
+    let autoplayTimer: number | undefined;
+    function stopAutoplay() {
+      if (autoplayTimer) window.clearInterval(autoplayTimer);
+    }
+    function startAutoplay() {
+      if (slides.length <= 1) return;
+      stopAutoplay();
+      autoplayTimer = window.setInterval(() => step(1), 5000);
+    }
+    function restartAutoplay() {
+      stopAutoplay();
+      startAutoplay();
+    }
+
+    carousel.querySelector(".carousel-prev")?.addEventListener("click", () => {
+      step(-1);
+      restartAutoplay();
+    });
+    carousel.querySelector(".carousel-next")?.addEventListener("click", () => {
+      step(1);
+      restartAutoplay();
+    });
+
+    carousel.addEventListener("mouseenter", stopAutoplay);
+    carousel.addEventListener("mouseleave", startAutoplay);
+    carousel.addEventListener("touchstart", stopAutoplay, { passive: true });
+
+    startAutoplay();
+  }
+</script>

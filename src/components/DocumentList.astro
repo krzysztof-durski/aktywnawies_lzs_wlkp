@@ -1,0 +1,47 @@
+---
+import { mediaUrl } from "../lib/media";
+import type { DocumentRow } from "../lib/db";
+
+interface Props {
+  documents: DocumentRow[];
+  mediaBaseUrl: string;
+  emptyLabel?: string;
+}
+
+const { documents, mediaBaseUrl, emptyLabel = "Brak dokumentów do pobrania." } = Astro.props;
+
+function formatSize(bytes: number | null): string {
+  if (!bytes) return "";
+  const mb = bytes / (1024 * 1024);
+  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+---
+
+{documents.length === 0 ? (
+  <p class="empty-state">{emptyLabel}</p>
+) : (
+  <ul class="doc-list">
+    {documents.map((doc) => (
+      <li>
+        <div class="doc-row">
+          <span>{doc.title}</span>
+          <span class="doc-meta">
+            {formatSize(doc.file_size)}
+            {" "}
+            <a class="button secondary" href={mediaUrl(mediaBaseUrl, doc.file_key)} download>
+              Pobierz
+            </a>
+          </span>
+        </div>
+        {doc.mime_type === "application/pdf" && (
+          <iframe
+            class="doc-preview"
+            src={mediaUrl(mediaBaseUrl, doc.file_key)}
+            title={doc.title}
+            loading="lazy"
+          />
+        )}
+      </li>
+    ))}
+  </ul>
+)}
