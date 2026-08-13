@@ -20,12 +20,11 @@
 		"MEDIA_BASE_URL": "",
 		"PUBLIC_TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
 	},
-	// TODO: replace database_id with the real one from `wrangler d1 create igrzyska-lzs-2026`
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "igrzyska-lzs-2026",
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "c484a7d6-c039-4b76-9f48-14308196b08d",
 			"migrations_dir": "migrations"
 		}
 	],

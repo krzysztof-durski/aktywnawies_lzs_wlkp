@@ -1,4 +1,6 @@
-const PBKDF2_ITERATIONS = 210_000;
+// workerd caps PBKDF2 at 100,000 iterations (Node's webcrypto has no such cap, which is why
+// this only surfaces once deployed — local `astro dev` runs on Node, not workerd).
+const PBKDF2_ITERATIONS = 100_000;
 const SESSION_TOKEN_BYTES = 32;
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7; // 7 days
 
