@@ -1,0 +1,36 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { listAuditLog } from "../../../lib/db";
+
+const { results: entries } = await listAuditLog(env.DB, 200);
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleString("pl-PL");
+}
+---
+
+<AdminLayout title="Dziennik zdarzeń">
+  <h1>Dziennik zdarzeń</h1>
+  <p class="doc-meta">Ostatnie {entries.length} zdarzeń (logowania, zmiany treści, zarządzanie użytkownikami).</p>
+
+  {entries.length === 0 ? (
+    <p class="empty-state">Brak zdarzeń.</p>
+  ) : (
+    <table class="admin-table">
+      <thead><tr><th>Data</th><th>Użytkownik</th><th>Akcja</th><th>Cel</th><th>Szczegóły</th><th>IP</th></tr></thead>
+      <tbody>
+        {entries.map((entry) => (
+          <tr>
+            <td>{formatDate(entry.created_at)}</td>
+            <td>{entry.username}</td>
+            <td>{entry.action}</td>
+            <td>{entry.target_type ? `${entry.target_type}${entry.target_id ? ` #${entry.target_id}` : ""}` : "—"}</td>
+            <td>{entry.details ?? "—"}</td>
+            <td>{entry.ip ?? "—"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</AdminLayout>

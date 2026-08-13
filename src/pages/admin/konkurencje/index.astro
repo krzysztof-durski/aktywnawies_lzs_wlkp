@@ -1,0 +1,47 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { listAllDisciplinesAdmin, type Discipline } from "../../../lib/db";
+import { KONKURENCJE_BLOCKS } from "../../../lib/nav";
+
+const { results: disciplines } = await listAllDisciplinesAdmin(env.DB);
+const grouped = disciplines.reduce<Record<string, Discipline[]>>((acc, d) => {
+  (acc[d.block] ??= []).push(d);
+  return acc;
+}, {});
+const saved = Astro.url.searchParams.get("saved");
+const deleted = Astro.url.searchParams.get("deleted");
+---
+
+<AdminLayout title="Konkurencje">
+  <h1>Konkurencje</h1>
+  {saved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano.</p>}
+  {deleted && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Usunięto.</p>}
+  <p>
+    <a class="button" href="/admin/konkurencje/new">Nowa dyscyplina</a>
+    {" "}
+    <a class="button secondary" href="/admin/konkurencje/kafelki">Kafelki konkurencji</a>
+  </p>
+  {KONKURENCJE_BLOCKS.map((block) => (
+    <section>
+      <h2>{block.title}</h2>
+      {(grouped[block.slug] ?? []).length === 0 ? (
+        <p class="empty-state">Brak dyscyplin w tym bloku.</p>
+      ) : (
+        <table class="admin-table">
+          <thead><tr><th>Tytuł</th><th>Slug</th><th>Kolejność</th><th></th></tr></thead>
+          <tbody>
+            {grouped[block.slug].map((d) => (
+              <tr>
+                <td>{d.title}</td>
+                <td>{d.slug}</td>
+                <td>{d.sort_order}</td>
+                <td><a href={`/admin/konkurencje/${d.id}/edit`}>Edytuj</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
+  ))}
+</AdminLayout>

@@ -1,0 +1,27 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import GalleryImageManageList from "../../../components/admin/GalleryImageManageList.astro";
+import { listMainGalleryImages } from "../../../lib/db";
+
+const { results: images } = await listMainGalleryImages(env.DB);
+
+const deleted = Astro.url.searchParams.get("deleted");
+const flagsSaved = Astro.url.searchParams.get("flags_saved");
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Główna galeria">
+  <p class="breadcrumb"><a href="/admin/gallery">Galeria</a></p>
+  <h1>Główna galeria</h1>
+  <p class="doc-meta">
+    Zdjęcia zebrane automatycznie ze wszystkich publicznych albumów. Aby dodać nowe zdjęcia, prześlij je w
+    konkretnym albumie — tutaj można tylko wykluczyć/wyróżnić lub usunąć istniejące.
+  </p>
+
+  {deleted && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Usunięto zdjęcie.</p>}
+  {flagsSaved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano zaznaczone zdjęcia.</p>}
+
+  <h2>Zdjęcia ({images.length})</h2>
+  <GalleryImageManageList images={images} mediaBaseUrl={env.MEDIA_BASE_URL} csrfToken={csrfToken} returnTo="/admin/gallery/glowny" />
+</AdminLayout>

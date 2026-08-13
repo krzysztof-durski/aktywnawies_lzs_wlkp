@@ -1,0 +1,81 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { listGalleryAlbums } from "../../../lib/db";
+
+const { results: albums } = await listGalleryAlbums(env.DB);
+const saved = Astro.url.searchParams.get("saved");
+const deleted = Astro.url.searchParams.get("deleted");
+const errorParam = Astro.url.searchParams.get("error");
+const ERROR_MESSAGES: Record<string, string> = {
+  "1": "Tytuł jest wymagany.",
+  reserved_slug: "Ten slug jest zarezerwowany dla głównej galerii — wybierz inny.",
+};
+const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Galeria">
+  <h1>Galeria</h1>
+  {saved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano.</p>}
+  {deleted && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Usunięto.</p>}
+  {errorMessage && <p class="form-error">{errorMessage}</p>}
+
+  <h2>Nowy album</h2>
+  <form class="stacked" method="POST" action={`/api/admin/gallery/albums?csrf_token=${csrfToken}`}>
+    <label>
+      Tytuł
+      <input type="text" name="title" required />
+    </label>
+    <label>
+      Slug (opcjonalnie)
+      <input type="text" name="slug" />
+    </label>
+    <label>
+      Opis
+      <input type="text" name="description" />
+    </label>
+    <label style="font-weight:400;display:flex;gap:.4rem;align-items:center;">
+      <input type="checkbox" name="is_private" style="width:auto;" />
+      Album prywatny (nie pojawia się w publicznej galerii ani w głównej galerii — zdjęcia z niego można mimo to wyróżnić w karuzeli na stronie głównej)
+    </label>
+    <button type="submit">Utwórz album</button>
+  </form>
+
+  <h2>Albumy</h2>
+  {albums.length === 0 ? (
+    <p class="empty-state">Brak albumów.</p>
+  ) : (
+    <table class="admin-table">
+      <thead><tr><th>Tytuł</th><th>Slug</th><th>Widoczność</th><th></th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Główna galeria</strong></td>
+          <td>glowny</td>
+          <td>Wirtualna (agregacja publicznych albumów)</td>
+          <td><a href="/admin/gallery/glowny">Zarządzaj</a></td>
+        </tr>
+        {albums.map((album) => (
+          <tr>
+            <td>{album.title}</td>
+            <td>{album.slug}</td>
+            <td>{album.is_private ? "Prywatny" : "Publiczny"}</td>
+            <td>
+              <a href={`/admin/gallery/albums/${album.id}`}>Zarządzaj</a>
+              {" | "}
+              <form
+                method="POST"
+                action={`/api/admin/gallery/albums/${album.id}?csrf_token=${csrfToken}`}
+                style="display:inline;"
+                data-confirm="Na pewno usunąć ten album wraz ze wszystkimi zdjęciami?"
+              >
+                <input type="hidden" name="intent" value="delete" />
+                <button type="submit" class="danger">Usuń</button>
+              </form>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</AdminLayout>

@@ -1,0 +1,48 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+
+const errorParam = Astro.url.searchParams.get("error");
+const ERROR_MESSAGES: Record<string, string> = {
+  "1": "Tytuł jest wymagany.",
+  cover_too_large: "Zdjęcie okładkowe jest za duże (limit 10MB).",
+  cover_not_image: "Plik okładki nie wygląda na prawidłowy obraz (JPEG/PNG/WebP).",
+};
+const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Nowa aktualność">
+  <h1>Nowa aktualność</h1>
+  {errorMessage && <p class="form-error">{errorMessage}</p>}
+  <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/news?csrf_token=${csrfToken}`}>
+    <label>
+      Tytuł
+      <input type="text" name="title" required />
+    </label>
+    <label>
+      Slug (opcjonalnie, generowany automatycznie z tytułu)
+      <input type="text" name="slug" />
+    </label>
+    <label>
+      Podtytuł
+      <input type="text" name="excerpt" />
+    </label>
+    <label>
+      Treść (HTML)
+      <textarea name="body_html"></textarea>
+    </label>
+    <label>
+      Zdjęcie okładkowe (opcjonalnie)
+      <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp" />
+    </label>
+    <label>
+      Status
+      <select name="status">
+        <option value="draft">Szkic</option>
+        <option value="published">Opublikowana</option>
+      </select>
+    </label>
+    <button type="submit">Zapisz</button>
+    <a class="button secondary" href="/admin/news">Anuluj</a>
+  </form>
+</AdminLayout>

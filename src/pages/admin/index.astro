@@ -1,0 +1,18 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getDashboardCounts } from "../../lib/db";
+
+const counts = await getDashboardCounts(env.DB);
+---
+
+<AdminLayout title="Pulpit">
+  <h1>Pulpit</h1>
+  <div class="card-grid">
+    <div class="card"><h3>{counts.newsCount}</h3><p>Aktualności</p></div>
+    <div class="card"><h3>{counts.documentsCount}</h3><p>Dokumenty</p></div>
+    <div class="card"><h3>{counts.albumsCount}</h3><p>Albumy</p></div>
+    <div class="card"><h3>{counts.imagesCount}</h3><p>Zdjęcia</p></div>
+    <div class="card"><h3>{counts.disciplinesCount}</h3><p>Dyscypliny</p></div>
+  </div>
+</AdminLayout>

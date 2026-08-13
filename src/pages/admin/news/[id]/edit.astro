@@ -1,0 +1,75 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import { getNewsPostById } from "../../../../lib/db";
+import { mediaUrl } from "../../../../lib/media";
+
+const id = Number(Astro.params.id);
+if (!Number.isInteger(id) || id <= 0) return new Response("Not found", { status: 404 });
+
+const post = await getNewsPostById(env.DB, id);
+if (!post) return new Response("Not found", { status: 404 });
+
+const errorParam = Astro.url.searchParams.get("error");
+const ERROR_MESSAGES: Record<string, string> = {
+  "1": "Tytuł jest wymagany.",
+  cover_too_large: "Zdjęcie okładkowe jest za duże (limit 10MB).",
+  cover_not_image: "Plik okładki nie wygląda na prawidłowy obraz (JPEG/PNG/WebP).",
+};
+const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title={`Edytuj: ${post.title}`}>
+  <h1>Edytuj aktualność</h1>
+  {errorMessage && <p class="form-error">{errorMessage}</p>}
+  <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/news/${id}?csrf_token=${csrfToken}`}>
+    <label>
+      Tytuł
+      <input type="text" name="title" value={post.title} required />
+    </label>
+    <label>
+      Slug
+      <input type="text" name="slug" value={post.slug} />
+    </label>
+    <label>
+      Podtytuł
+      <input type="text" name="excerpt" value={post.excerpt ?? ""} />
+    </label>
+    <label>
+      Treść (HTML)
+      <textarea name="body_html">{post.body_html}</textarea>
+    </label>
+    {post.cover_image_key && (
+      <div>
+        <p>Obecna okładka:</p>
+        <img src={mediaUrl(env.MEDIA_BASE_URL, post.cover_image_key)} alt="" style="max-width:240px;border-radius:6px;" />
+        <label style="font-weight:400;display:flex;gap:.4rem;align-items:center;margin-top:.5rem;">
+          <input type="checkbox" name="remove_cover" style="width:auto;" /> Usuń okładkę
+        </label>
+      </div>
+    )}
+    <label>
+      {post.cover_image_key ? "Zamień zdjęcie okładkowe" : "Zdjęcie okładkowe (opcjonalnie)"}
+      <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp" />
+    </label>
+    <label>
+      Status
+      <select name="status">
+        <option value="draft" selected={post.status === "draft"}>Szkic</option>
+        <option value="published" selected={post.status === "published"}>Opublikowana</option>
+      </select>
+    </label>
+    <button type="submit">Zapisz</button>
+    <a class="button secondary" href="/admin/news">Anuluj</a>
+  </form>
+  <form
+    method="POST"
+    action={`/api/admin/news/${id}?csrf_token=${csrfToken}`}
+    style="margin-top:1rem;"
+    data-confirm="Na pewno usunąć tę aktualność?"
+  >
+    <input type="hidden" name="intent" value="delete" />
+    <button type="submit" class="danger">Usuń</button>
+  </form>
+</AdminLayout>

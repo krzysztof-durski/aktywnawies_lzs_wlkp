@@ -1,0 +1,30 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { isSiteOffline, getSiteOfflineMessage } from "../../../lib/db";
+
+const offline = await isSiteOffline(env.DB);
+const message = await getSiteOfflineMessage(env.DB);
+
+const saved = Astro.url.searchParams.get("saved");
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Ustawienia strony">
+  <h1>Ustawienia strony</h1>
+  {saved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano.</p>}
+
+  {offline && <p class="form-error">Strona jest teraz OFFLINE dla odwiedzających (panel administracyjny nadal działa).</p>}
+
+  <form class="stacked" method="POST" action={`/api/admin/ustawienia?csrf_token=${csrfToken}`}>
+    <label style="font-weight:400;display:flex;gap:.4rem;align-items:center;">
+      <input type="checkbox" name="site_offline" style="width:auto;" checked={offline} />
+      Strona offline dla odwiedzających
+    </label>
+    <label>
+      Komunikat wyświetlany odwiedzającym
+      <textarea name="site_offline_message">{message}</textarea>
+    </label>
+    <button type="submit">Zapisz</button>
+  </form>
+</AdminLayout>

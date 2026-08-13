@@ -1,0 +1,76 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { listAdminUsers } from "../../../lib/db";
+
+const { results: users } = await listAdminUsers(env.DB);
+
+const saved = Astro.url.searchParams.get("saved");
+const errorParam = Astro.url.searchParams.get("error");
+const ERROR_MESSAGES: Record<string, string> = {
+  invalid: "Login jest wymagany, a hasło musi mieć co najmniej 12 znaków.",
+  mismatch: "Hasła nie są takie same.",
+  taken: "Ten login jest już zajęty.",
+  self: "Nie możesz wyłączyć własnego konta.",
+};
+const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
+const csrfToken = Astro.locals.csrfToken;
+const currentAdminId = Astro.locals.admin?.id;
+---
+
+<AdminLayout title="Użytkownicy">
+  <h1>Użytkownicy</h1>
+  {saved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano.</p>}
+  {errorMessage && <p class="form-error">{errorMessage}</p>}
+
+  <h2>Nowy użytkownik</h2>
+  <form class="stacked" method="POST" action={`/api/admin/uzytkownicy?csrf_token=${csrfToken}`}>
+    <label>
+      Login
+      <input type="text" name="username" required />
+    </label>
+    <label>
+      Hasło (min. 12 znaków)
+      <input type="password" name="password" required minlength="12" />
+    </label>
+    <label>
+      Powtórz hasło
+      <input type="password" name="confirm_password" required minlength="12" />
+    </label>
+    <label>
+      Rola
+      <select name="role">
+        <option value="admin">Administrator</option>
+        <option value="superadmin">Superadministrator</option>
+      </select>
+    </label>
+    <button type="submit">Utwórz użytkownika</button>
+  </form>
+
+  <h2>Lista użytkowników</h2>
+  <table class="admin-table">
+    <thead><tr><th>Login</th><th>Rola</th><th>Status</th><th>Utworzono</th><th></th></tr></thead>
+    <tbody>
+      {users.map((user) => (
+        <tr>
+          <td>{user.username}</td>
+          <td>{user.role === "superadmin" ? "Superadministrator" : "Administrator"}</td>
+          <td>{user.disabled ? "Wyłączony" : "Aktywny"}</td>
+          <td>{new Date(user.created_at).toLocaleDateString("pl-PL")}</td>
+          <td>
+            {user.id === currentAdminId ? (
+              <span class="doc-meta">(bieżące konto)</span>
+            ) : (
+              <form method="POST" action={`/api/admin/uzytkownicy/${user.id}?csrf_token=${csrfToken}`}>
+                <input type="hidden" name="intent" value={user.disabled ? "enable" : "disable"} />
+                <button type="submit" class={user.disabled ? "secondary" : "danger"}>
+                  {user.disabled ? "Włącz" : "Wyłącz"}
+                </button>
+              </form>
+            )}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</AdminLayout>

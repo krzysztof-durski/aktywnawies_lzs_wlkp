@@ -1,0 +1,40 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getValidSessionByTokenHash } from "../../lib/db";
+import { SESSION_COOKIE_NAME, hashSessionToken } from "../../lib/auth";
+
+const existingToken = Astro.cookies.get(SESSION_COOKIE_NAME)?.value;
+if (existingToken) {
+  const session = await getValidSessionByTokenHash(env.DB, await hashSessionToken(existingToken));
+  if (session) return Astro.redirect("/admin");
+}
+
+const errorParam = Astro.url.searchParams.get("error");
+const ERROR_MESSAGES: Record<string, string> = {
+  invalid: "Nieprawidłowy login lub hasło.",
+  captcha: "Weryfikacja CAPTCHA nie powiodła się. Spróbuj ponownie.",
+  rate_limited: "Zbyt wiele prób logowania. Spróbuj ponownie za chwilę.",
+};
+const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd. Spróbuj ponownie." : null;
+---
+
+<BaseLayout title="Logowanie do panelu">
+  <div class="container" style="max-width: 420px;">
+    <h1>Logowanie</h1>
+    {errorMessage && <p class="form-error">{errorMessage}</p>}
+    <form class="stacked" method="POST" action="/api/admin/login">
+      <label>
+        Login
+        <input type="text" name="username" autocomplete="username" required />
+      </label>
+      <label>
+        Hasło
+        <input type="password" name="password" autocomplete="current-password" required />
+      </label>
+      <div class="cf-turnstile" data-sitekey={env.PUBLIC_TURNSTILE_SITE_KEY}></div>
+      <button type="submit">Zaloguj</button>
+    </form>
+  </div>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</BaseLayout>

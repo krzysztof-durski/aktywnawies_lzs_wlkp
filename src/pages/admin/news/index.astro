@@ -1,0 +1,31 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { listAllNews } from "../../../lib/db";
+
+const { results: news } = await listAllNews(env.DB);
+const saved = Astro.url.searchParams.get("saved");
+const deleted = Astro.url.searchParams.get("deleted");
+---
+
+<AdminLayout title="Aktualności">
+  <h1>Aktualności</h1>
+  {saved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano.</p>}
+  {deleted && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Usunięto.</p>}
+  <p><a class="button" href="/admin/news/new">Nowa aktualność</a></p>
+  <table class="admin-table">
+    <thead>
+      <tr><th>Tytuł</th><th>Status</th><th>Utworzono</th><th></th></tr>
+    </thead>
+    <tbody>
+      {news.map((post) => (
+        <tr>
+          <td>{post.title}</td>
+          <td>{post.status === "published" ? "Opublikowana" : "Szkic"}</td>
+          <td>{new Date(post.created_at).toLocaleString("pl-PL")}</td>
+          <td><a href={`/admin/news/${post.id}/edit`}>Edytuj</a></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</AdminLayout>

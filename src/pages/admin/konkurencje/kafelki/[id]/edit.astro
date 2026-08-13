@@ -1,0 +1,65 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../../../layouts/AdminLayout.astro";
+import { getKonkurencjeTileById } from "../../../../../lib/db";
+import { mediaUrl } from "../../../../../lib/media";
+
+const id = Number(Astro.params.id);
+if (!Number.isInteger(id) || id <= 0) return new Response("Not found", { status: 404 });
+
+const tile = await getKonkurencjeTileById(env.DB, id);
+if (!tile) return new Response("Not found", { status: 404 });
+
+const errorParam = Astro.url.searchParams.get("error");
+const ERROR_MESSAGES: Record<string, string> = {
+  missing: "Tytuł i link są wymagane.",
+  too_large: "Zdjęcie jest za duże (limit 10MB).",
+  not_image: "Plik nie wygląda na prawidłowy obraz (JPEG/PNG/WebP).",
+};
+const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title={`Edytuj: ${tile.title}`}>
+  <p class="breadcrumb"><a href="/admin/konkurencje/kafelki">Kafelki konkurencji</a></p>
+  <h1>Edytuj kafelek</h1>
+  {errorMessage && <p class="form-error">{errorMessage}</p>}
+  <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/konkurencje/kafelki/${id}?csrf_token=${csrfToken}`}>
+    <label>
+      Tytuł
+      <input type="text" name="title" value={tile.title} required />
+    </label>
+    <label>
+      Link
+      <input type="text" name="link_url" value={tile.link_url} required />
+    </label>
+    {tile.image_key && (
+      <div>
+        <p>Obecne zdjęcie:</p>
+        <img src={mediaUrl(env.MEDIA_BASE_URL, tile.image_key)} alt="" style="max-width:200px;border-radius:6px;" />
+        <label style="font-weight:400;display:flex;gap:.4rem;align-items:center;margin-top:.5rem;">
+          <input type="checkbox" name="remove_image" style="width:auto;" /> Usuń zdjęcie
+        </label>
+      </div>
+    )}
+    <label>
+      {tile.image_key ? "Zamień zdjęcie" : "Zdjęcie"}
+      <input type="file" name="image" accept="image/jpeg,image/png,image/webp" />
+    </label>
+    <label>
+      Kolejność
+      <input type="number" name="sort_order" value={tile.sort_order} />
+    </label>
+    <button type="submit">Zapisz</button>
+    <a class="button secondary" href="/admin/konkurencje/kafelki">Anuluj</a>
+  </form>
+  <form
+    method="POST"
+    action={`/api/admin/konkurencje/kafelki/${id}?csrf_token=${csrfToken}`}
+    style="margin-top:1rem;"
+    data-confirm="Na pewno usunąć ten kafelek?"
+  >
+    <input type="hidden" name="intent" value="delete" />
+    <button type="submit" class="danger">Usuń</button>
+  </form>
+</AdminLayout>

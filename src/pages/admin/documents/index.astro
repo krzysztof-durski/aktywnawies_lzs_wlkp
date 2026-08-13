@@ -1,0 +1,44 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { listAllDocumentsAdmin } from "../../../lib/db";
+
+const { results: documents } = await listAllDocumentsAdmin(env.DB);
+const saved = Astro.url.searchParams.get("saved");
+const deleted = Astro.url.searchParams.get("deleted");
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Dokumenty">
+  <h1>Dokumenty</h1>
+  {saved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano.</p>}
+  {deleted && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Usunięto.</p>}
+  <p><a class="button" href="/admin/documents/new">Nowy dokument</a></p>
+  {documents.length === 0 ? (
+    <p class="empty-state">Brak dokumentów.</p>
+  ) : (
+    <table class="admin-table">
+      <thead><tr><th>Tytuł</th><th>Kategoria</th><th>Dyscyplina</th><th></th><th></th></tr></thead>
+      <tbody>
+        {documents.map((doc) => (
+          <tr>
+            <td>{doc.title}</td>
+            <td>{doc.category}</td>
+            <td>{doc.discipline ?? "—"}</td>
+            <td><a href={`/admin/documents/${doc.id}/edit`}>Edytuj</a></td>
+            <td>
+              <form
+                method="POST"
+                action={`/api/admin/documents/${doc.id}?csrf_token=${csrfToken}`}
+                data-confirm="Na pewno usunąć ten dokument?"
+              >
+                <input type="hidden" name="intent" value="delete" />
+                <button type="submit" class="danger">Usuń</button>
+              </form>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )}
+</AdminLayout>

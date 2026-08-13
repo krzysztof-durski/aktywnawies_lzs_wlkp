@@ -1,0 +1,54 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import GalleryImageManageList from "../../../../components/admin/GalleryImageManageList.astro";
+import { getGalleryAlbumById, listGalleryImages } from "../../../../lib/db";
+
+const id = Number(Astro.params.id);
+if (!Number.isInteger(id) || id <= 0) return new Response("Not found", { status: 404 });
+
+const album = await getGalleryAlbumById(env.DB, id);
+if (!album) return new Response("Not found", { status: 404 });
+
+const { results: images } = await listGalleryImages(env.DB, id);
+
+const uploaded = Astro.url.searchParams.get("uploaded");
+const skipped = Astro.url.searchParams.get("skipped");
+const deleted = Astro.url.searchParams.get("deleted");
+const hasError = Astro.url.searchParams.get("error");
+const flagsSaved = Astro.url.searchParams.get("flags_saved");
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title={album.title}>
+  <p class="breadcrumb"><a href="/admin/gallery">Galeria</a></p>
+  <h1>{album.title}</h1>
+  {album.is_private ? <p class="doc-meta">Album prywatny — nie widoczny w publicznej galerii.</p> : null}
+
+  {deleted && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Usunięto zdjęcie.</p>}
+  {hasError && <p class="form-error">Wybierz przynajmniej jeden plik.</p>}
+  {flagsSaved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano zaznaczone zdjęcia.</p>}
+  {uploaded !== null && (
+    <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">
+      Przesłano {uploaded} zdjęć{skipped && Number(skipped) > 0 ? `, pominięto ${skipped} (nieprawidłowy plik lub za duży)` : ""}.
+    </p>
+  )}
+
+  <h2>Dodaj zdjęcia</h2>
+  <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/gallery/images?csrf_token=${csrfToken}`}>
+    <input type="hidden" name="album_id" value={id} />
+    <label>
+      Pliki (JPEG, PNG, WebP)
+      <input type="file" name="files" accept="image/jpeg,image/png,image/webp" multiple required />
+    </label>
+    <button type="submit">Prześlij</button>
+  </form>
+
+  <h2>Zdjęcia ({images.length})</h2>
+  <GalleryImageManageList
+    images={images}
+    mediaBaseUrl={env.MEDIA_BASE_URL}
+    csrfToken={csrfToken}
+    returnTo={`/admin/gallery/albums/${id}`}
+  />
+</AdminLayout>

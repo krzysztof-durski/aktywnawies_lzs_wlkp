@@ -1,0 +1,48 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { KONKURENCJE_BLOCKS } from "../../../lib/nav";
+
+const errorParam = Astro.url.searchParams.get("error");
+const ERROR_MESSAGES: Record<string, string> = {
+  "1": "Tytuł i blok są wymagane.",
+  cover_too_large: "Zdjęcie jest za duże (limit 10MB).",
+  cover_not_image: "Plik nie wygląda na prawidłowy obraz (JPEG/PNG/WebP).",
+};
+const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Nowa dyscyplina">
+  <h1>Nowa dyscyplina</h1>
+  {errorMessage && <p class="form-error">{errorMessage}</p>}
+  <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/konkurencje?csrf_token=${csrfToken}`}>
+    <label>
+      Blok
+      <select name="block" required>
+        {KONKURENCJE_BLOCKS.map((block) => <option value={block.slug}>{block.title}</option>)}
+      </select>
+    </label>
+    <label>
+      Tytuł
+      <input type="text" name="title" required />
+    </label>
+    <label>
+      Slug (opcjonalnie, generowany automatycznie z tytułu)
+      <input type="text" name="slug" />
+    </label>
+    <label>
+      Opis (HTML)
+      <textarea name="body_html"></textarea>
+    </label>
+    <label>
+      Zdjęcie w nagłówku strony dyscypliny (opcjonalnie)
+      <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp" />
+    </label>
+    <label>
+      Kolejność
+      <input type="number" name="sort_order" value="0" />
+    </label>
+    <button type="submit">Zapisz</button>
+    <a class="button secondary" href="/admin/konkurencje">Anuluj</a>
+  </form>
+</AdminLayout>

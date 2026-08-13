@@ -1,0 +1,64 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import { listDocumentCategorySuggestions, listAllDisciplinesAdmin, getDocumentById } from "../../../../lib/db";
+import { KONKURENCJE_BLOCKS } from "../../../../lib/nav";
+
+const id = Number(Astro.params.id);
+if (!Number.isInteger(id) || id <= 0) return new Response("Not found", { status: 404 });
+
+const doc = await getDocumentById(env.DB, id);
+if (!doc) return new Response("Not found", { status: 404 });
+
+const categories = await listDocumentCategorySuggestions(env.DB);
+const { results: disciplines } = await listAllDisciplinesAdmin(env.DB);
+
+const errorParam = Astro.url.searchParams.get("error");
+const ERROR_MESSAGES: Record<string, string> = {
+  missing: "Tytuł i kategoria są wymagane.",
+  too_large: "Plik jest za duży (limit 20MB).",
+  not_pdf: "Plik nie wygląda na prawidłowy PDF.",
+};
+const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Edytuj dokument">
+  <h1>Edytuj dokument</h1>
+  {errorMessage && <p class="form-error">{errorMessage}</p>}
+  <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/documents/${doc.id}?csrf_token=${csrfToken}`}>
+    <input type="hidden" name="intent" value="update" />
+    <label>
+      Tytuł
+      <input type="text" name="title" required value={doc.title} />
+    </label>
+    <label>
+      Kategoria
+      <input type="text" name="category" list="category-suggestions" required value={doc.category} />
+      <datalist id="category-suggestions">
+        {categories.map((c) => <option value={c} />)}
+      </datalist>
+    </label>
+    <label>
+      Dyscyplina lub blok (opcjonalnie)
+      <input type="text" name="discipline" list="discipline-suggestions" value={doc.discipline ?? ""} />
+      <datalist id="discipline-suggestions">
+        {disciplines.map((d) => <option value={d.slug} />)}
+        {KONKURENCJE_BLOCKS.map((b) => <option value={b.slug} />)}
+      </datalist>
+    </label>
+    <p class="doc-meta">
+      Wpisz slug konkretnej konkurencji (np. <code>pilka-nozna-kobiet</code>) razem z kategorią
+      <code>regulamin</code>/<code>listy-startowe</code>/<code>wyniki</code>, aby dokument pojawił się w tabeli
+      konkurencji danego bloku. Wpisz slug całego bloku (<code>sportowy</code>/<code>rekreacyjny</code>/<code>integracyjny</code>)
+      bez konkretnej kategorii, aby dokument pojawił się jako ogólny link na górze strony bloku (np. „Druk zgłoszeń”).
+    </p>
+    <label>
+      Zastąp plik PDF (opcjonalnie)
+      <input type="file" name="file" accept="application/pdf" />
+    </label>
+    <p class="doc-meta">Obecny plik: <code>{doc.file_key.split("/").pop()}</code>. Zostaw puste, aby zachować obecny plik.</p>
+    <button type="submit">Zapisz</button>
+    <a class="button secondary" href="/admin/documents">Anuluj</a>
+  </form>
+</AdminLayout>

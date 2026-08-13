@@ -1,0 +1,114 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { listFeaturedImages } from "../../../lib/db";
+import { mediaUrl } from "../../../lib/media";
+
+const { results: images } = await listFeaturedImages(env.DB);
+
+const saved = Astro.url.searchParams.get("saved");
+const hasError = Astro.url.searchParams.get("error");
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Karuzela zdjęć">
+  <h1>Karuzela zdjęć</h1>
+  <p class="doc-meta">
+    Zdjęcia oznaczone jako „Wyróżnij" (w albumie lub w Głównej galerii) trafiają tutaj. Przeciągnij, aby ustawić
+    kolejność w karuzeli na stronie głównej, a potem kliknij „Zapisz kolejność". „Usuń z karuzeli" nie usuwa
+    zdjęcia — tylko odznacza „Wyróżnij".
+  </p>
+
+  {saved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano kolejność.</p>}
+  {hasError && <p class="form-error">Nie udało się zapisać kolejności.</p>}
+
+  {images.length === 0 ? (
+    <p class="empty-state">
+      Brak wyróżnionych zdjęć. Zaznacz „Wyróżnij" przy zdjęciu w albumie lub w Głównej galerii, aby pojawiło się tutaj.
+    </p>
+  ) : (
+    <>
+      <form method="POST" id="reorder-form" action={`/api/admin/gallery/carousel/reorder?csrf_token=${csrfToken}`}>
+        <input type="hidden" name="order" id="reorder-input" value="" />
+        <ul id="carousel-order-list" class="carousel-order-list">
+          {images.map((img) => (
+            <li draggable="true" data-id={img.id} class="carousel-order-item">
+              <span class="carousel-order-item__handle" aria-hidden="true">⠿</span>
+              <img src={mediaUrl(env.MEDIA_BASE_URL, img.thumb_key ?? img.file_key)} alt={img.caption ?? ""} loading="lazy" />
+              <span class="carousel-order-item__caption">{img.caption || "(bez opisu)"}</span>
+              <label class="gallery-manage-item__check">
+                <input type="checkbox" name={`full_width_${img.id}`} checked={!!img.featured_full_width} />
+                Wyświetl samodzielnie, na całą szerokość
+              </label>
+              <span class="carousel-order-item__buttons">
+                <button type="button" class="secondary move-up" aria-label="Przesuń w górę">&uarr;</button>
+                <button type="button" class="secondary move-down" aria-label="Przesuń w dół">&darr;</button>
+                <button type="submit" form={`remove-${img.id}`} class="danger">Usuń z karuzeli</button>
+              </span>
+            </li>
+          ))}
+        </ul>
+        <button type="submit" style="margin-top:1rem;">Zapisz kolejność</button>
+      </form>
+
+      {images.map((img) => (
+        <form
+          method="POST"
+          id={`remove-${img.id}`}
+          action={`/api/admin/gallery/images/${img.id}?csrf_token=${csrfToken}`}
+          hidden
+        >
+          <input type="hidden" name="intent" value="update" />
+          <input type="hidden" name="return_to" value="/admin/gallery/karuzela" />
+          {img.exclude_from_main ? <input type="hidden" name="exclude_from_main" value="on" /> : null}
+        </form>
+      ))}
+    </>
+  )}
+</AdminLayout>
+
+<script>
+  const list = document.getElementById("carousel-order-list");
+  const form = document.getElementById("reorder-form") as HTMLFormElement | null;
+  const input = document.getElementById("reorder-input") as HTMLInputElement | null;
+  if (list && form && input) {
+    let dragEl: HTMLLIElement | null = null;
+
+    list.addEventListener("dragstart", (e) => {
+      const li = (e.target as HTMLElement)?.closest("li");
+      if (!li) return;
+      dragEl = li as HTMLLIElement;
+      e.dataTransfer?.setData("text/plain", ""); // Firefox requires data to be set for drag to start.
+    });
+
+    list.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const li = (e.target as HTMLElement)?.closest("li");
+      if (!li || li === dragEl || !dragEl) return;
+      const rect = li.getBoundingClientRect();
+      const before = e.clientY - rect.top < rect.height / 2;
+      list.insertBefore(dragEl, before ? li : li.nextSibling);
+    });
+
+    list.querySelectorAll(".move-up").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const li = btn.closest("li");
+        const prev = li?.previousElementSibling;
+        if (li && prev) list.insertBefore(li, prev);
+      });
+    });
+
+    list.querySelectorAll(".move-down").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const li = btn.closest("li");
+        const next = li?.nextElementSibling;
+        if (li && next) list.insertBefore(next, li);
+      });
+    });
+
+    form.addEventListener("submit", () => {
+      const ids = Array.from(list.querySelectorAll<HTMLLIElement>("li[data-id]")).map((li) => li.dataset.id);
+      input.value = ids.join(",");
+    });
+  }
+</script>
