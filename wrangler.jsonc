@@ -13,12 +13,11 @@
 	},
 	// Empty = serve media via the /media/[...key] Worker route (dev + interim prod fallback).
 	// Set once `wrangler r2 bucket domain add` is done, to serve straight from the CDN with no Worker CPU.
-	// PUBLIC_TURNSTILE_SITE_KEY is Cloudflare's published "always passes" test key — safe to commit,
-	// but MUST be swapped for the real site key from the Turnstile dashboard before going live.
-	// The matching secret key lives in .dev.vars locally / `wrangler secret put TURNSTILE_SECRET` in prod.
+	// Real Turnstile site key (widget "igrzyska-admin-login"). Matching secret key set via
+	// `wrangler secret put TURNSTILE_SECRET` in prod / .dev.vars locally.
 	"vars": {
 		"MEDIA_BASE_URL": "",
-		"PUBLIC_TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
+		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAAEPPfwAro4Ybbxcb"
 	},
 	"d1_databases": [
 		{
