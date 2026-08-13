@@ -17,7 +17,7 @@
 	// `wrangler secret put TURNSTILE_SECRET` in prod / .dev.vars locally.
 	"vars": {
 		"MEDIA_BASE_URL": "",
-		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAAEPPfwAro4Ybbxcb"
+		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAEPPfwAro4Ybbxcb"
 	},
 	"d1_databases": [
 		{
