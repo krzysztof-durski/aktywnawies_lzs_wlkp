@@ -1,8 +1,8 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { getAdminUserByUsername, createSession, logAuditEvent } from "../../../lib/db";
 import { generateSessionToken, verifyPassword, SESSION_MAX_AGE_SECONDS, SESSION_COOKIE_NAME } from "../../../lib/auth";
 import { verifyTurnstileToken } from "../../../lib/turnstile";
+import { checkLoginRateLimit } from "../../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -10,10 +10,11 @@ function loginRedirect(error: string): Response {
   return new Response(null, { status: 303, headers: { Location: `/admin/login?error=${error}` } });
 }
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies, locals }) => {
+  const { env } = locals.runtime;
   const ip = request.headers.get("cf-connecting-ip") ?? "unknown";
 
-  const { success: withinLimit } = await env.RATE_LIMITER.limit({ key: ip });
+  const withinLimit = await checkLoginRateLimit(env.SESSION, ip);
   if (!withinLimit) return loginRedirect("rate_limited");
 
   const form = await request.formData();

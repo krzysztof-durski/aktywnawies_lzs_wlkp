@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { createKonkurencjeTile, type KonkurencjeTileInput } from "../../../../../lib/db";
 import { buildKonkurencjeTileKey, detectImageType, putObject, deleteObject, MAX_IMAGE_BYTES } from "../../../../../lib/r2";
 import { audit } from "../../../../../lib/audit";
@@ -7,6 +6,7 @@ import { audit } from "../../../../../lib/audit";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
 
   const form = await request.formData();

@@ -1,5 +1,5 @@
 ---
-import { env } from "cloudflare:workers";
+const { env } = Astro.locals.runtime;
 import "../styles/global.css";
 import { INFORMACJE_ITEMS, KONKURENCJE_BLOCKS } from "../lib/nav";
 import { listAllDisciplines, type Discipline } from "../lib/db";

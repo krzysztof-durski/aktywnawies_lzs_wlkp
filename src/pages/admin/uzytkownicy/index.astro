@@ -1,5 +1,5 @@
 ---
-import { env } from "cloudflare:workers";
+const { env } = Astro.locals.runtime;
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { listAdminUsers } from "../../../lib/db";
 

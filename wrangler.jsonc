@@ -2,19 +2,15 @@
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"compatibility_date": "2026-08-13",
 	"compatibility_flags": ["global_fetch_strictly_public"],
-	"name": "aktywnawies_lzs_wlkp",
-	"main": "@astrojs/cloudflare/entrypoints/server",
-	"assets": {
-		"directory": "./dist",
-		"binding": "ASSETS"
-	},
+	"name": "aktywnawies-lzs-wlkp",
+	"pages_build_output_dir": "./dist",
 	"observability": {
 		"enabled": true
 	},
-	// Empty = serve media via the /media/[...key] Worker route (dev + interim prod fallback).
-	// Set once `wrangler r2 bucket domain add` is done, to serve straight from the CDN with no Worker CPU.
+	// Empty = serve media via the /media/[...key] Pages Function route (dev + interim prod fallback).
+	// Set once `wrangler r2 bucket domain add` is done, to serve straight from the CDN with no Function invocation.
 	// Real Turnstile site key (widget "igrzyska-admin-login"). Matching secret key set via
-	// `wrangler secret put TURNSTILE_SECRET` in prod / .dev.vars locally.
+	// `wrangler pages secret put TURNSTILE_SECRET` in prod / .dev.vars locally.
 	"vars": {
 		"MEDIA_BASE_URL": "",
 		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAEPPfwAro4Ybbxcb"
@@ -27,21 +23,18 @@
 			"migrations_dir": "migrations"
 		}
 	],
-	// TODO: create the real bucket with `wrangler r2 bucket create igrzyska-lzs-2026-media`
 	"r2_buckets": [
 		{
 			"binding": "MEDIA_BUCKET",
 			"bucket_name": "igrzyska-lzs-2026-media"
 		}
 	],
-	"unsafe": {
-		"bindings": [
-			{
-				"name": "RATE_LIMITER",
-				"type": "ratelimit",
-				"namespace_id": "1001",
-				"simple": { "limit": 10, "period": 60 }
-			}
-		]
-	}
+	// Session storage (@astrojs/cloudflare) and the login rate limiter (src/lib/rate-limit.ts,
+	// which replaces the Workers-only Rate Limiting binding that Pages Functions doesn't support).
+	"kv_namespaces": [
+		{
+			"binding": "SESSION",
+			"id": "ab7ad9a9e9834475a303bb45c5e8f91c"
+		}
+	]
 }

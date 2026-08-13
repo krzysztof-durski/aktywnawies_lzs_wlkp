@@ -1,11 +1,11 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { getAdminUserById, setAdminUserDisabled } from "../../../../lib/db";
 import { audit } from "../../../../lib/audit";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, params, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
   const id = Number(params.id);
   if (!Number.isInteger(id) || id <= 0) return new Response("Not found", { status: 404 });

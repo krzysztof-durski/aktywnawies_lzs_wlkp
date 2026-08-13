@@ -1,5 +1,5 @@
 ---
-import { env } from "cloudflare:workers";
+const { env } = Astro.locals.runtime;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getValidSessionByTokenHash } from "../../lib/db";
 import { SESSION_COOKIE_NAME, hashSessionToken } from "../../lib/auth";

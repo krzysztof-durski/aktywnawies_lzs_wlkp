@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { getGalleryAlbumById, createGalleryImages, type GalleryImageInput } from "../../../../lib/db";
 import { buildGalleryImageKey, detectImageType, putObject, deleteObject, MAX_IMAGE_BYTES } from "../../../../lib/r2";
 import { nameFromFilename } from "../../../../lib/slugify";
@@ -8,6 +7,7 @@ import { audit } from "../../../../lib/audit";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
 
   const form = await request.formData();

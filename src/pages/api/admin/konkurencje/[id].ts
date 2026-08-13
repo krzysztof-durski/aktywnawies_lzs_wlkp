@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { getDisciplineById, updateDiscipline, deleteDiscipline, type DisciplineInput } from "../../../../lib/db";
 import { slugify } from "../../../../lib/slugify";
 import { isBlockSlug } from "../../../../lib/nav";
@@ -14,6 +13,7 @@ function parseId(idParam: string | undefined): number | null {
 }
 
 export const POST: APIRoute = async ({ request, params, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
   const id = parseId(params.id);
   if (!id) return new Response("Not found", { status: 404 });

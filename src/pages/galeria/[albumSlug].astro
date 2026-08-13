@@ -1,5 +1,5 @@
 ---
-import { env } from "cloudflare:workers";
+const { env } = Astro.locals.runtime;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import GalleryLightbox from "../../components/GalleryLightbox.astro";
 import { getGalleryAlbum, listGalleryImages } from "../../lib/db";

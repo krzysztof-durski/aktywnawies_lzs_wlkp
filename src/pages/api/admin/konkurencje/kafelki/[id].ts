@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { getKonkurencjeTileById, updateKonkurencjeTile, deleteKonkurencjeTile, type KonkurencjeTileInput } from "../../../../../lib/db";
 import { buildKonkurencjeTileKey, detectImageType, putObject, deleteObject, MAX_IMAGE_BYTES } from "../../../../../lib/r2";
 import { audit } from "../../../../../lib/audit";
@@ -12,6 +11,7 @@ function parseId(idParam: string | undefined): number | null {
 }
 
 export const POST: APIRoute = async ({ request, params, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
   const id = parseId(params.id);
   if (!id) return new Response("Not found", { status: 404 });

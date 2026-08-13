@@ -1,11 +1,11 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { upsertPage } from "../../../../lib/db";
 import { audit } from "../../../../lib/audit";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, params, locals }) => {
+  const { env } = locals.runtime;
   const slug = params.slug;
   if (!slug || !locals.admin) return new Response("Bad request", { status: 400 });
 

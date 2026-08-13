@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { getGalleryImageById, deleteGalleryImage, updateGalleryImageFlags } from "../../../../../lib/db";
 import { deleteObject } from "../../../../../lib/r2";
 import { audit } from "../../../../../lib/audit";
@@ -7,6 +6,7 @@ import { audit } from "../../../../../lib/audit";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, params, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
   const id = Number(params.id);
   if (!Number.isInteger(id) || id <= 0) return new Response("Not found", { status: 404 });

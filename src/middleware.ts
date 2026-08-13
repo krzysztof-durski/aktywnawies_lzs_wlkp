@@ -1,5 +1,4 @@
 import { defineMiddleware } from "astro:middleware";
-import { env } from "cloudflare:workers";
 import { getValidSessionByTokenHash, isSiteOffline, getSiteOfflineMessage } from "./lib/db";
 import {
   CSRF_COOKIE_NAME,
@@ -74,6 +73,7 @@ function isAssetPath(pathname: string): boolean {
 }
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  const { env } = context.locals.runtime;
   const url = new URL(context.request.url);
   const { pathname } = url;
   const isAdminLogin = pathname === "/admin/login";

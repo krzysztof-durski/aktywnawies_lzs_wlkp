@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { getNewsPostById, updateNewsPost, deleteNewsPost, type NewsInput } from "../../../../lib/db";
 import { slugify } from "../../../../lib/slugify";
 import { buildNewsCoverKey, detectImageType, putObject, deleteObject, MAX_IMAGE_BYTES } from "../../../../lib/r2";
@@ -15,6 +14,7 @@ function parseId(idParam: string | undefined): number | null {
 // Plain HTML forms can only POST — "intent" tells this single endpoint whether
 // to update or delete, instead of relying on a PUT/DELETE method forms can't send.
 export const POST: APIRoute = async ({ request, params, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
   const id = parseId(params.id);
   if (!id) return new Response("Not found", { status: 404 });

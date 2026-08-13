@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { createNewsPost, type NewsInput } from "../../../../lib/db";
 import { slugify } from "../../../../lib/slugify";
 import { buildNewsCoverKey, detectImageType, putObject, deleteObject, MAX_IMAGE_BYTES } from "../../../../lib/r2";
@@ -8,6 +7,7 @@ import { audit } from "../../../../lib/audit";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
 
   const form = await request.formData();

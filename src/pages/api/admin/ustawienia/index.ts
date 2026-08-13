@@ -1,5 +1,4 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { setSiteSetting } from "../../../../lib/db";
 import { audit } from "../../../../lib/audit";
 
@@ -7,6 +6,7 @@ export const prerender = false;
 
 // Gated to superadmin only via the SUPERADMIN_ONLY_PREFIXES check in src/middleware.ts.
 export const POST: APIRoute = async ({ request, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
 
   const form = await request.formData();

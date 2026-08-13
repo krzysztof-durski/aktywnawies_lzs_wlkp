@@ -1,11 +1,11 @@
 import type { APIRoute } from "astro";
-import { env } from "cloudflare:workers";
 import { bulkUpdateGalleryImageFlags, type BulkFlagUpdate } from "../../../../../lib/db";
 import { audit } from "../../../../../lib/audit";
 
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const { env } = locals.runtime;
   if (!locals.admin) return new Response("Unauthorized", { status: 401 });
 
   const form = await request.formData();
