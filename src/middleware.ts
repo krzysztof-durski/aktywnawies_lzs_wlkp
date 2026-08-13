@@ -27,8 +27,11 @@ const SUPERADMIN_ONLY_PREFIXES = [
 const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": [
     "default-src 'self'",
-    "script-src 'self' https://challenges.cloudflare.com",
+    // The hash allows Turnstile's inline bootstrap script under a strict CSP (no 'unsafe-inline').
+    // If Cloudflare changes api.js, the browser console will report the new hash to swap in.
+    "script-src 'self' https://challenges.cloudflare.com 'sha256-l2ZuM+GKBUw7rVCIimH2/fLfttdOUGdmYKRKn6JKkGM='",
     "frame-src https://challenges.cloudflare.com",
+    "connect-src 'self' https://challenges.cloudflare.com",
     "img-src 'self' https: data:",
     "style-src 'self' 'unsafe-inline'",
     "frame-ancestors 'none'",
