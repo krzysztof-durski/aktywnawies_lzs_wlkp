@@ -1,0 +1,49 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"compatibility_date": "2026-08-13",
+	"compatibility_flags": ["global_fetch_strictly_public"],
+	"name": "aktywnawies_lzs_wlkp",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS"
+	},
+	"observability": {
+		"enabled": true
+	},
+	// Empty = serve media via the /media/[...key] Worker route (dev + interim prod fallback).
+	// Set once `wrangler r2 bucket domain add` is done, to serve straight from the CDN with no Worker CPU.
+	// PUBLIC_TURNSTILE_SITE_KEY is Cloudflare's published "always passes" test key — safe to commit,
+	// but MUST be swapped for the real site key from the Turnstile dashboard before going live.
+	// The matching secret key lives in .dev.vars locally / `wrangler secret put TURNSTILE_SECRET` in prod.
+	"vars": {
+		"MEDIA_BASE_URL": "",
+		"PUBLIC_TURNSTILE_SITE_KEY": "1x00000000000000000000AA"
+	},
+	// TODO: replace database_id with the real one from `wrangler d1 create igrzyska-lzs-2026`
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "igrzyska-lzs-2026",
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "migrations"
+		}
+	],
+	// TODO: create the real bucket with `wrangler r2 bucket create igrzyska-lzs-2026-media`
+	"r2_buckets": [
+		{
+			"binding": "MEDIA_BUCKET",
+			"bucket_name": "igrzyska-lzs-2026-media"
+		}
+	],
+	"unsafe": {
+		"bindings": [
+			{
+				"name": "RATE_LIMITER",
+				"type": "ratelimit",
+				"namespace_id": "1001",
+				"simple": { "limit": 10, "period": 60 }
+			}
+		]
+	}
+}
