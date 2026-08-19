@@ -3,7 +3,6 @@
 	"compatibility_date": "2026-08-13",
 	"compatibility_flags": ["global_fetch_strictly_public"],
 	"name": "aktywnawies-lzs-wlkp",
-	"account_id": "93493cabcda9b38d2129acc3e1aa8dd6",
 	"pages_build_output_dir": "./dist",
 	"observability": {
 		"enabled": true
