@@ -1,4 +1,4 @@
-# XXIX Ogólnopolskie Igrzyska LZS – Spała 2026
+# V Ogólnopolskie Igrzyska LZS „Aktywna Wieś” – Szreniawa 2026
 
 Public website for the event, with an admin panel for the client to manage news, documents, gallery photos, and static page text — no developer involvement needed for routine updates.
 

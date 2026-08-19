@@ -1,6 +1,8 @@
 :root {
   --color-forest: #1b3a2b;
   --color-forest-dark: #122a1e;
+  --color-forest-light: #2f6146;
+  --color-forest-light-dark: #204a34;
   --color-gold: #c9a227;
   --color-text: #1f2620;
   --color-text-muted: #55625a;
@@ -66,19 +68,43 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.5rem 1.5rem;
   padding: 0.9rem 1.25rem;
-  max-width: var(--max-width);
+  max-width: 1400px;
   margin: 0 auto;
 }
 
 .site-logo {
-  font-weight: 700;
-  font-size: 1.1rem;
-  color: var(--color-gold);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
   text-decoration: none;
-  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.site-logo img {
+  height: 40px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.site-logo__aktywna {
+  height: 60px !important;
+}
+
+.site-logo__event {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--color-forest);
+  max-width: 16ch;
+}
+
+@media (max-width: 640px) {
+  .site-logo__event {
+    display: none;
+  }
 }
 
 .nav-toggle {
@@ -120,8 +146,10 @@ a {
 .site-nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
+  justify-content: flex-end;
+  gap: 0.5rem 0.4rem;
   align-items: center;
+  min-width: 0;
 }
 
 .site-nav a {
@@ -204,21 +232,39 @@ a {
   white-space: nowrap;
 }
 
-/* Nested flyout (Konkurencje block -> its disciplines). Hover-only enhancement;
-   touch users reach the same disciplines via the block's own landing page. */
+/* Nested flyout (Konkurencje section -> its disciplines). Hover-only on
+   desktop; touch devices get an explicit tap-to-open toggle (see the
+   .flyout-trigger click handler below) since there's no hover to fall back on
+   and, unlike the old per-block pages, a section header has nowhere of its
+   own to navigate to. */
 
 .site-nav .dropdown-item {
   position: relative;
 }
 
-.site-nav .dropdown-item.has-flyout > a {
+.site-nav .dropdown-item.has-flyout > .flyout-trigger {
   display: flex;
+  width: 100%;
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
+  background: none;
+  border: none;
+  font: inherit;
+  font-weight: 500;
+  color: var(--color-forest);
+  text-align: left;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
 }
 
-.site-nav .dropdown-item.has-flyout > a::after {
+.site-nav .dropdown-item.has-flyout:hover > .flyout-trigger,
+.site-nav .dropdown-item.has-flyout > .flyout-trigger:focus-visible {
+  background-color: var(--color-forest);
+  color: #fff;
+}
+
+.site-nav .dropdown-item.has-flyout > .flyout-trigger::after {
   content: "▸";
   font-size: 0.7em;
 }
@@ -238,7 +284,8 @@ a {
 }
 
 .site-nav .dropdown-item:hover > .flyout,
-.site-nav .dropdown-item:has(:focus-visible) > .flyout {
+.site-nav .dropdown-item:has(:focus-visible) > .flyout,
+.site-nav .dropdown-item.is-open > .flyout {
   display: block;
 }
 
@@ -251,6 +298,10 @@ a {
 /* Small screens: hamburger toggle, full-width stacked menu, dropdowns flow
    inline instead of floating (avoids off-screen overlays on narrow viewports). */
 @media (max-width: 780px) {
+  .site-header__bar {
+    flex-wrap: wrap;
+  }
+
   .nav-toggle {
     display: flex;
   }
@@ -298,7 +349,7 @@ a {
     min-width: 0;
   }
 
-  .site-nav .dropdown-item.has-flyout > a::after {
+  .site-nav .dropdown-item.has-flyout > .flyout-trigger::after {
     content: "";
   }
 }
@@ -306,7 +357,7 @@ a {
 /* Hero */
 
 .hero {
-  background: linear-gradient(160deg, var(--color-forest) 0%, var(--color-forest-dark) 100%);
+  background: linear-gradient(160deg, var(--color-forest-light) 0%, var(--color-forest-light-dark) 100%);
   color: #fff;
   padding: 3rem 1.25rem;
 }
@@ -314,6 +365,37 @@ a {
 .hero__inner {
   max-width: var(--max-width);
   margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2.5rem;
+}
+
+.hero__text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hero__logo {
+  flex-shrink: 0;
+  width: 340px;
+  height: auto;
+}
+
+@media (max-width: 780px) {
+  .hero__inner {
+    flex-direction: column-reverse;
+    text-align: center;
+  }
+
+  .hero__logo {
+    width: 200px;
+  }
+
+  .hero p {
+    margin-left: auto;
+    margin-right: auto;
+  }
 }
 
 .hero h1 {
@@ -332,6 +414,11 @@ a {
   font-weight: 700;
   color: var(--color-gold);
   margin-top: 1rem;
+}
+
+.hero__link {
+  color: #fff;
+  text-decoration: underline;
 }
 
 /* Discipline page hero banner (photo + title, set via admin-uploaded cover image) */
@@ -394,6 +481,10 @@ main {
   padding: 2.5rem 0;
 }
 
+.container > section + section {
+  margin-top: 2.5rem;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -409,6 +500,69 @@ main {
 
 .card h3 {
   margin-top: 0;
+}
+
+/* Homepage "Skróty" shortcut tiles */
+
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 860px) {
+  .shortcut-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .shortcut-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shortcut-card {
+  display: block;
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-gold);
+  border-radius: var(--radius);
+  padding: 1.5rem 1.25rem;
+  background: var(--color-bg-alt);
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.shortcut-card:hover,
+.shortcut-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+  border-color: var(--color-forest);
+  text-decoration: none;
+}
+
+.shortcut-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-bg);
+  font-size: 1.4rem;
+}
+
+.shortcut-card h3 {
+  margin: 0 0 0.4rem;
+  color: var(--color-forest);
+}
+
+.shortcut-card p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
 }
 
 .doc-list {
@@ -594,16 +748,19 @@ main {
 
 .carousel-slide {
   flex: 0 0 auto;
-  width: min(420px, 80vw);
-  scroll-snap-align: start;
+  height: 320px;
+  max-width: min(560px, 80vw);
+  scroll-snap-align: center;
   display: block;
   cursor: zoom-in;
 }
 
 .carousel-slide img {
-  width: 100%;
-  height: 320px;
-  object-fit: cover;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  background: var(--color-bg);
   border-radius: var(--radius);
   display: block;
 }
@@ -612,7 +769,12 @@ main {
    track width so no neighboring slides peek in on either side. */
 .carousel-slide--full {
   width: calc(100% - 6rem);
+  max-width: none;
   scroll-snap-align: center;
+}
+
+.carousel-slide--full img {
+  width: 100%;
 }
 
 .carousel-prev,
@@ -658,11 +820,12 @@ main {
   .carousel-track {
     padding: 1rem 1.5rem;
   }
+  .carousel-slide {
+    height: 240px;
+    max-width: 80vw;
+  }
   .carousel-slide--full {
     width: calc(100% - 3rem);
-  }
-  .carousel-slide img {
-    height: 240px;
   }
   .carousel-prev {
     left: 0.25rem;
@@ -710,6 +873,22 @@ main {
   color: var(--color-text-muted);
 }
 
+.site-footer__credit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.site-footer__credit a {
+  display: flex;
+  align-items: center;
+}
+
+.site-footer__credit img {
+  height: 24px;
+  width: auto;
+}
+
 /* Forms (admin) */
 
 form.stacked {
@@ -736,6 +915,72 @@ form.stacked select {
 form.stacked textarea {
   min-height: 200px;
   font-family: ui-monospace, monospace;
+}
+
+/* Rich text editor (Opis/Treść HTML fields) — contenteditable + hidden textarea kept in sync */
+
+.rte {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.rte__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem;
+  background: var(--color-bg-alt);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.rte__toolbar button {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: 0.3rem 0.55rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.rte__toolbar button:hover {
+  background: var(--color-bg-alt);
+}
+
+.rte__sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--color-border);
+  margin: 0 0.2rem;
+}
+
+.rte__editor {
+  min-height: 200px;
+  max-height: 480px;
+  overflow-y: auto;
+  padding: 0.75rem;
+  font: inherit;
+  /* The ancestor <label> sets font-weight:600 for its field label text; without
+     resetting it here, the editor inherits that weight and execCommand("bold")'s
+     already-bold? detection gets confused, silently no-op'ing on the first toggle. */
+  font-weight: 400;
+  background: var(--color-bg);
+}
+
+.rte__editor:focus {
+  outline: none;
+}
+
+.rte__editor p {
+  margin: 0 0 0.75rem;
+}
+
+.rte__editor ul,
+.rte__editor ol {
+  margin: 0 0 0.75rem;
+  padding-left: 1.5rem;
 }
 
 button,
@@ -796,6 +1041,36 @@ button.danger {
 
 .admin-main {
   padding: 2rem;
+}
+
+.admin-page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-page-header .breadcrumb {
+  margin-bottom: 0;
+}
+
+.admin-close {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+
+.admin-close:hover {
+  background: var(--color-bg-alt);
+  color: var(--color-text);
 }
 
 .table-scroll {
@@ -960,4 +1235,220 @@ table.admin-table td {
 
 .gallery-manage-item__check input {
   width: auto;
+}
+
+/* Partners / patronat logos */
+
+.partners__list {
+  margin: 0 0 1.25rem;
+  padding-left: 1.25rem;
+}
+
+.partners__list li {
+  margin-bottom: 0.3rem;
+  border-radius: 4px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.partners__list li[data-key] {
+  cursor: default;
+}
+
+.partners__list li.is-highlighted {
+  background: var(--color-bg-alt);
+  color: var(--color-forest);
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  margin-left: -0.4rem;
+}
+
+.partners__note {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.o-igrzyskach__note {
+  color: var(--color-text-muted);
+  font-style: italic;
+  border-top: 1px solid var(--color-border);
+  padding-top: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.o-igrzyskach__address {
+  font-style: normal;
+  border-left: 3px solid var(--color-gold);
+  padding-left: 1rem;
+  margin: 0 0 1.5rem;
+}
+
+.partners__grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.partners__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.partners__item[data-key] {
+  cursor: default;
+}
+
+.partners__item.is-highlighted {
+  background: var(--color-bg-alt);
+  transform: scale(1.05);
+}
+
+.partners__item img {
+  max-width: 160px;
+  max-height: 90px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Homepage all-logos strip */
+
+.partners-strip {
+  border-top: 1px solid var(--color-border);
+  padding-top: 2.5rem;
+}
+
+.partners-strip__grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin: 1.5rem 0;
+}
+
+.partners-strip__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.partners-strip__item img {
+  max-width: 140px;
+  max-height: 80px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter: grayscale(1);
+  opacity: 0.75;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.partners-strip__item img:hover {
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+.partners-strip p {
+  text-align: center;
+}
+
+/* Program Igrzysk schedule */
+
+.program-term {
+  font-size: 1.1rem;
+}
+
+.program-note {
+  color: var(--color-text-muted);
+  font-style: italic;
+  margin-top: -0.5rem;
+}
+
+.program-schedule {
+  display: grid;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.program-day {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-bg-alt);
+}
+
+.program-day__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  background: var(--color-forest);
+  color: #fff;
+  padding: 0.85rem 1.25rem;
+}
+
+.program-day__date {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-gold);
+}
+
+.program-day__label {
+  color: #e7ede8;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+}
+
+.program-day__items {
+  list-style: none;
+  margin: 0;
+  padding: 1.1rem 1.25rem;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: 1.25rem;
+  row-gap: 0.9rem;
+}
+
+.program-day__items li {
+  display: contents;
+}
+
+.program-day__time {
+  font-weight: 700;
+  color: var(--color-forest);
+  border-left: 3px solid var(--color-gold);
+  padding-left: 0.6rem;
+  white-space: nowrap;
+}
+
+.program-day__text {
+  color: var(--color-text);
+}
+
+@media (max-width: 480px) {
+  .program-day__items {
+    grid-template-columns: 1fr;
+    row-gap: 0.35rem;
+  }
+
+  .program-day__items li {
+    display: grid;
+    padding-bottom: 0.55rem;
+  }
+
+  .program-day__items li:not(:last-child) {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .program-day__time {
+    border-left: none;
+    padding-left: 0;
+    white-space: normal;
+  }
 }

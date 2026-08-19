@@ -1,9 +1,12 @@
 ---
 const { env } = Astro.locals.runtime;
+import { Image } from "astro:assets";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import NewsCard from "../components/NewsCard.astro";
 import Carousel from "../components/Carousel.astro";
+import PartnersLogoStrip from "../components/PartnersLogoStrip.astro";
 import { listPublishedNews, listFeaturedImages } from "../lib/db";
+import aktywnaWiesLogo from "../assets/logo/AKTYWNA WIEŚ (3).png";
 
 const { results: news } = await listPublishedNews(env.DB, 3);
 const { results: featuredImages } = await listFeaturedImages(env.DB);
@@ -12,14 +15,18 @@ const { results: featuredImages } = await listFeaturedImages(env.DB);
 <BaseLayout title="Strona główna">
   <section class="hero">
     <div class="hero__inner">
-      <h1>XXIX Ogólnopolskie Igrzyska LZS</h1>
-      <p>
-        Ogólnopolskie Igrzyska Ludowych Zespołów Sportowych to największe w Polsce święto sportu
-        wiejskiego i lokalnego. Od blisko trzech dekad gromadzą w jednym miejscu reprezentacje
-        wszystkich województw, które rywalizują zarówno w konkurencjach sportowych, jak i
-        rekreacyjnych.
-      </p>
-      <p class="dates">Spała, 27–29 sierpnia 2026</p>
+      <div class="hero__text">
+        <h1>V Ogólnopolskie Igrzyska LZS „Aktywna Wieś”</h1>
+        <p>
+          Finał ogólnopolskiego przedsięwzięcia sportowo-rekreacyjnego skierowanego do mieszkańców
+          obszarów wiejskich, łączącego aktywność fizyczną, integrację społeczną oraz promocję
+          lokalnych tradycji i dziedzictwa polskiej wsi. W wydarzeniu weźmie udział ok. 700
+          uczestników reprezentujących wszystkie 16 województw.
+        </p>
+        <p class="dates">Szreniawa, 18–20 września 2026</p>
+        <p><a class="hero__link" href="/informacje/o-igrzyskach">Więcej o Igrzyskach &rarr;</a></p>
+      </div>
+      <Image class="hero__logo" src={aktywnaWiesLogo} alt="Aktywna Wieś" width={420} />
     </div>
   </section>
 
@@ -40,24 +47,40 @@ const { results: featuredImages } = await listFeaturedImages(env.DB);
 
     <section>
       <h2>Skróty</h2>
-      <div class="card-grid">
-        <a class="card" href="/konkurencje">
+      <div class="shortcut-grid">
+        <a class="shortcut-card" href="/konkurencje">
+          <span class="shortcut-card__icon" aria-hidden="true">🏆</span>
           <h3>Konkurencje</h3>
-          <p>Bloki sportowy, rekreacyjny i integracyjny.</p>
+          <p>Konkurencje sportowo-rekreacyjne, Ludowe Gry Sportowe i Kulinarna Bitwa Regionów.</p>
         </a>
-        <a class="card" href="/klasyfikacje">
+        <a class="shortcut-card" href="/informacje/o-igrzyskach">
+          <span class="shortcut-card__icon" aria-hidden="true">📖</span>
+          <h3>O Igrzyskach</h3>
+          <p>Idea, uczestnicy i program V Ogólnopolskich Igrzysk LZS.</p>
+        </a>
+        <a class="shortcut-card" href="/klasyfikacje">
+          <span class="shortcut-card__icon" aria-hidden="true">📊</span>
           <h3>Klasyfikacje</h3>
-          <p>Wyniki i klasyfikacje zawodów.</p>
+          <p>Wyniki i klasyfikacje poszczególnych konkurencji.</p>
         </a>
-        <a class="card" href="/galeria">
+        <a class="shortcut-card" href="/galeria">
+          <span class="shortcut-card__icon" aria-hidden="true">📷</span>
           <h3>Galeria</h3>
-          <p>Zdjęcia z Igrzysk.</p>
+          <p>Zdjęcia z Igrzysk i wydarzeń towarzyszących.</p>
         </a>
-        <a class="card" href="/do-pobrania">
+        <a class="shortcut-card" href="/do-pobrania">
+          <span class="shortcut-card__icon" aria-hidden="true">📄</span>
           <h3>Do pobrania</h3>
-          <p>Materiały i dokumenty.</p>
+          <p>Regulamin Igrzysk oraz pozostałe materiały i dokumenty.</p>
+        </a>
+        <a class="shortcut-card" href="/informacje/organizatorzy">
+          <span class="shortcut-card__icon" aria-hidden="true">🤝</span>
+          <h3>Organizatorzy i Partnerzy</h3>
+          <p>Kto organizuje i wspiera V Ogólnopolskie Igrzyska LZS.</p>
         </a>
       </div>
     </section>
+
+    <PartnersLogoStrip />
   </div>
 </BaseLayout>

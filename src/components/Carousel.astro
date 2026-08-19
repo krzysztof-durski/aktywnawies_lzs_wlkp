@@ -58,14 +58,23 @@ const { images, mediaBaseUrl } = Astro.props;
       track.appendChild(firstClone);
       slides = Array.from(track.children) as HTMLElement[];
       offset = 1;
-      track.scrollLeft = slides[offset].offsetLeft;
+    }
+
+    // Slides vary in width (each keeps its own image's aspect ratio), so
+    // centering has to target each slide's own midpoint against the track's
+    // visible width rather than aligning every slide's left edge the same way.
+    function centerScrollLeft(index: number): number {
+      const slide = slides[index];
+      return slide.offsetLeft + slide.offsetWidth / 2 - track!.clientWidth / 2;
     }
 
     function currentIndex(): number {
+      const viewCenter = track!.scrollLeft + track!.clientWidth / 2;
       let idx = 0;
       let best = Infinity;
       slides.forEach((el, i) => {
-        const diff = Math.abs(el.offsetLeft - track!.scrollLeft);
+        const center = el.offsetLeft + el.offsetWidth / 2;
+        const diff = Math.abs(center - viewCenter);
         if (diff < best) {
           best = diff;
           idx = i;
@@ -75,7 +84,11 @@ const { images, mediaBaseUrl } = Astro.props;
     }
 
     function goToSlideIndex(index: number, smooth: boolean) {
-      track!.scrollTo({ left: slides[index].offsetLeft, behavior: smooth ? "smooth" : "auto" });
+      track!.scrollTo({ left: centerScrollLeft(index), behavior: smooth ? "smooth" : "auto" });
+    }
+
+    if (loop) {
+      track.scrollLeft = centerScrollLeft(offset);
     }
 
     function step(direction: 1 | -1) {
