@@ -1,0 +1,47 @@
+---
+import { Image } from "astro:assets";
+
+import lzsLogo from "../assets/logo/lzs-logo-150dpi.jpg";
+import lzs80Lat from "../assets/logo/LOGO_80 lecia.jpg";
+
+import mon from "../assets/sponsors/orzeł_mon_logo.jpg";
+import msit from "../assets/sponsors/MSiT Nowe.png";
+import mrirw from "../assets/sponsors/MRiRW.png";
+import marszalek from "../assets/sponsors/marszalek-wielkopolskie.png";
+import radioPoznan from "../assets/sponsors/radio-poznan.png";
+import tvp3 from "../assets/sponsors/TVP3_Poznan_podst-1.png";
+
+import gminaSteszew from "../assets/sponsors/Gmina Stęszew.png";
+import gminaKomorniki from "../assets/sponsors/LOGO_GMINA KOMORNIKI.jpg";
+import powiatPoznanski from "../assets/sponsors/logo-powiat poznański.png";
+import muzeumSzreniawa from "../assets/sponsors/logo_muzeum_h125.png";
+import kowr from "../assets/sponsors/logo_KOWR_pelna_nazwa.jpg";
+
+const logos = [
+  { src: lzsLogo, alt: "Ludowe Zespoły Sportowe" },
+  { src: lzs80Lat, alt: "80 lat Ludowych Zespołów Sportowych" },
+  { src: mon, alt: "Ministerstwo Obrony Narodowej" },
+  { src: msit, alt: "Ministerstwo Sportu i Turystyki" },
+  { src: mrirw, alt: "Ministerstwo Rolnictwa i Rozwoju Wsi" },
+  { src: marszalek, alt: "Marszałek Województwa Wielkopolskiego" },
+  { src: gminaSteszew, alt: "Gmina Stęszew" },
+  { src: gminaKomorniki, alt: "Gmina Komorniki" },
+  { src: powiatPoznanski, alt: "Powiat Poznański" },
+  { src: muzeumSzreniawa, alt: "Muzeum Narodowe Rolnictwa i Przemysłu Rolno-Spożywczego w Szreniawie" },
+  { src: kowr, alt: "Krajowy Ośrodek Wsparcia Rolnictwa" },
+  { src: radioPoznan, alt: "Radio Poznań" },
+  { src: tvp3, alt: "TVP3 Poznań" },
+];
+---
+
+<section class="partners-strip">
+  <h2>Organizatorzy, patroni i partnerzy</h2>
+  <div class="partners-strip__grid">
+    {logos.map((logo) => (
+      <div class="partners-strip__item">
+        <Image src={logo.src} alt={logo.alt} width={140} />
+      </div>
+    ))}
+  </div>
+  <p><a href="/informacje/organizatorzy">Pełna lista organizatorów i partnerów &rarr;</a></p>
+</section>

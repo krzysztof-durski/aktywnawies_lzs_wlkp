@@ -3,6 +3,7 @@ const { env } = Astro.locals.runtime;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocumentList from "../../components/DocumentList.astro";
 import { listAllPublishedDocuments, type DocumentRow } from "../../lib/db";
+import regulaminUrl from "../../assets/docs/Regulamin_tymczasowy.pdf?url";
 
 const { results: documents } = await listAllPublishedDocuments(env.DB);
 
@@ -16,8 +17,25 @@ const categories = Object.keys(grouped).sort();
 <BaseLayout title="Do pobrania">
   <div class="container">
     <h1>Do pobrania</h1>
+
+    <section>
+      <h2>Regulamin Igrzysk</h2>
+      <ul class="doc-list">
+        <li>
+          <div class="doc-row">
+            <span>Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś” (wersja robocza)</span>
+            <a class="button secondary" href={regulaminUrl} download>Pobierz</a>
+          </div>
+        </li>
+      </ul>
+      <p class="doc-meta">
+        Regulaminy poszczególnych konkurencji, listy startowe i wyniki są dostępne na stronie{" "}
+        <a href="/konkurencje">Konkurencje</a>.
+      </p>
+    </section>
+
     {categories.length === 0 ? (
-      <p class="empty-state">Brak materiałów do pobrania.</p>
+      <p class="empty-state">Brak pozostałych materiałów do pobrania.</p>
     ) : (
       categories.map((category) => (
         <section>

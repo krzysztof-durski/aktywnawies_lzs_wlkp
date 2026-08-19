@@ -1,0 +1,59 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const days = [
+  {
+    date: "18.09.2026",
+    label: "Piątek",
+    items: [
+      { time: "Do 16:00", text: "Przyjazd uczestników" },
+      { time: "20:00", text: "Oficjalne otwarcie Igrzysk" },
+    ],
+  },
+  {
+    date: "19.09.2026",
+    label: "Sobota",
+    items: [
+      { time: "9:30–14:00", text: "Konkurencje sportowe" },
+      { time: "15:00–18:00", text: "Kulinarna Bitwa Regionów" },
+      { time: "18:30", text: "Podsumowanie Igrzysk" },
+    ],
+  },
+  {
+    date: "20.09.2026",
+    label: "Niedziela",
+    items: [
+      { time: "9:00", text: "Zwiedzanie Muzeum Narodowego Rolnictwa i Przemysłu Rolno-Spożywczego w Szreniawie" },
+      { time: "13:00", text: "Wyjazd uczestników" },
+    ],
+  },
+];
+---
+
+<BaseLayout title="Program Igrzysk">
+  <div class="container">
+    <p class="breadcrumb"><a href="/">Strona główna</a> / Informacje</p>
+    <h1>Program Igrzysk</h1>
+    <p class="program-term">Termin Igrzysk: <strong>18–20.09.2026 r.</strong></p>
+    <p class="program-note">Ramowy program – projekt</p>
+
+    <div class="program-schedule">
+      {days.map((day) => (
+        <section class="program-day">
+          <div class="program-day__heading">
+            <span class="program-day__date">{day.date}</span>
+            <span class="program-day__label">{day.label}</span>
+          </div>
+          <ul class="program-day__items">
+            {day.items.map((item) => (
+              <li>
+                <span class="program-day__time">{item.time}</span>
+                <span class="program-day__text">{item.text}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  </div>
+</BaseLayout>
