@@ -1,29 +1,65 @@
 ---
 const { env } = Astro.locals.runtime;
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import KonkurencjeTiles from "../../components/KonkurencjeTiles.astro";
-import { listKonkurencjeTiles } from "../../lib/db";
-import { KONKURENCJE_BLOCKS } from "../../lib/nav";
+import { listAllDisciplines, groupDisciplinesBySection } from "../../lib/db";
+import { mediaUrl } from "../../lib/media";
 
-const { results: tiles } = await listKonkurencjeTiles(env.DB);
+const { results: disciplines } = await listAllDisciplines(env.DB);
+const bySection = groupDisciplinesBySection(disciplines);
 ---
 
 <BaseLayout title="Konkurencje">
   <div class="container">
     <h1>Konkurencje</h1>
-    <div class="card-grid">
-      {KONKURENCJE_BLOCKS.map((block) => (
-        <a class="card" href={`/konkurencje/${block.slug}`}>
-          <h3>{block.title}</h3>
-        </a>
-      ))}
-    </div>
 
-    {tiles.length > 0 && (
-      <>
-        <h2 style="margin-top:2rem;">Wybierz konkurencję</h2>
-        <KonkurencjeTiles tiles={tiles} mediaBaseUrl={env.MEDIA_BASE_URL} />
-      </>
+    {disciplines.length === 0 ? (
+      <p class="empty-state">Lista konkurencji zostanie wkrótce uzupełniona.</p>
+    ) : (
+      Array.from(bySection.entries()).map(([section, sectionDisciplines]) => (
+        <section>
+          <h2>{section}</h2>
+          <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Konkurencja</th>
+                  <th>Regulamin</th>
+                  <th>Listy startowe</th>
+                  <th>Wyniki</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sectionDisciplines.map((d) => (
+                  <tr>
+                    <td>
+                      <a href={`/konkurencje/${d.slug}`}>
+                        {d.cover_image_key && (
+                          <img
+                            src={mediaUrl(env.MEDIA_BASE_URL, d.cover_image_key)}
+                            alt=""
+                            style="width:32px;height:32px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:.5rem;"
+                          />
+                        )}
+                        {d.title}
+                      </a>
+                    </td>
+                    <td>
+                      {d.regulamin_key ? (
+                        <a href={mediaUrl(env.MEDIA_BASE_URL, d.regulamin_key)} target="_blank" rel="noopener">Otwórz</a>
+                      ) : d.regulamin_text ? (
+                        <a href={`/konkurencje/${d.slug}#regulamin`}>Zobacz</a>
+                      ) : "—"}
+                    </td>
+                    {[d.listy_startowe_key, d.wyniki_key].map((key) => (
+                      <td>{key ? <a href={mediaUrl(env.MEDIA_BASE_URL, key)} target="_blank" rel="noopener">Otwórz</a> : "—"}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      ))
     )}
   </div>
 </BaseLayout>

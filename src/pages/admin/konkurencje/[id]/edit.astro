@@ -1,8 +1,8 @@
 ---
 const { env } = Astro.locals.runtime;
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
-import { getDisciplineById } from "../../../../lib/db";
-import { KONKURENCJE_BLOCKS } from "../../../../lib/nav";
+import RichTextEditor from "../../../../components/admin/RichTextEditor.astro";
+import { getDisciplineById, KNOWN_DISCIPLINE_SECTIONS } from "../../../../lib/db";
 import { mediaUrl } from "../../../../lib/media";
 
 const id = Number(Astro.params.id);
@@ -11,28 +11,33 @@ if (!Number.isInteger(id) || id <= 0) return new Response("Not found", { status:
 const discipline = await getDisciplineById(env.DB, id);
 if (!discipline) return new Response("Not found", { status: 404 });
 
+const saved = Astro.url.searchParams.get("saved");
 const errorParam = Astro.url.searchParams.get("error");
 const ERROR_MESSAGES: Record<string, string> = {
-  "1": "Tytuł i blok są wymagane.",
+  "1": "Tytuł jest wymagany.",
   cover_too_large: "Zdjęcie jest za duże (limit 10MB).",
   cover_not_image: "Plik nie wygląda na prawidłowy obraz (JPEG/PNG/WebP).",
+  pdf_too_large: "Jeden z plików PDF jest za duży (limit 20MB).",
+  pdf_not_pdf: "Jeden z plików nie wygląda na prawidłowy PDF.",
 };
+
+const pdfFields = [
+  { key: "listy_startowe_key", name: "listy_startowe", removeName: "remove_listy_startowe", label: "Listy startowe" },
+  { key: "wyniki_key", name: "wyniki", removeName: "remove_wyniki", label: "Wyniki" },
+] as const;
 const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
 const csrfToken = Astro.locals.csrfToken;
 ---
 
 <AdminLayout title={`Edytuj: ${discipline.title}`}>
+  <div class="admin-page-header">
+    <p class="breadcrumb"><a href="/admin/konkurencje">Konkurencje</a> / {discipline.title}</p>
+    <a class="admin-close" href="/admin/konkurencje" aria-label="Zamknij edycję">&times;</a>
+  </div>
   <h1>Edytuj dyscyplinę</h1>
+  {saved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano.</p>}
   {errorMessage && <p class="form-error">{errorMessage}</p>}
   <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/konkurencje/${id}?csrf_token=${csrfToken}`}>
-    <label>
-      Blok
-      <select name="block" required>
-        {KONKURENCJE_BLOCKS.map((block) => (
-          <option value={block.slug} selected={block.slug === discipline.block}>{block.title}</option>
-        ))}
-      </select>
-    </label>
     <label>
       Tytuł
       <input type="text" name="title" value={discipline.title} required />
@@ -42,22 +47,72 @@ const csrfToken = Astro.locals.csrfToken;
       <input type="text" name="slug" value={discipline.slug} />
     </label>
     <label>
-      Opis (HTML)
-      <textarea name="body_html">{discipline.body_html}</textarea>
+      Sekcja (grupa na stronie Konkurencje)
+      <input type="text" name="section" list="section-suggestions" value={discipline.section ?? ""} />
+      <datalist id="section-suggestions">
+        {KNOWN_DISCIPLINE_SECTIONS.map((s) => <option value={s} />)}
+      </datalist>
+    </label>
+    <label>
+      Opis
+      <RichTextEditor name="body_html" value={discipline.body_html} />
     </label>
     {discipline.cover_image_key && (
       <div>
         <p>Obecne zdjęcie:</p>
         <img src={mediaUrl(env.MEDIA_BASE_URL, discipline.cover_image_key)} alt="" style="max-width:240px;border-radius:6px;" />
-        <label style="font-weight:400;display:flex;gap:.4rem;align-items:center;margin-top:.5rem;">
-          <input type="checkbox" name="remove_cover" style="width:auto;" /> Usuń zdjęcie
-        </label>
+        <div data-remove-toggle style="margin-top:.5rem;">
+          <input type="hidden" name="remove_cover" value="" />
+          <button type="button" class="button secondary">Usuń zdjęcie</button>
+        </div>
       </div>
     )}
     <label>
       {discipline.cover_image_key ? "Zamień zdjęcie" : "Zdjęcie w nagłówku strony dyscypliny (opcjonalnie)"}
       <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp" />
     </label>
+    <p><strong>Regulamin</strong> — dodaj plik PDF, napisz tekst poniżej, albo jedno i drugie.</p>
+    {discipline.regulamin_key && (
+      <div>
+        <p>
+          Obecny plik: <a href={mediaUrl(env.MEDIA_BASE_URL, discipline.regulamin_key)} target="_blank" rel="noopener">Regulamin.pdf</a>
+        </p>
+        <div data-remove-toggle style="margin-top:.5rem;">
+          <input type="hidden" name="remove_regulamin" value="" />
+          <button type="button" class="button secondary">Usuń plik</button>
+        </div>
+      </div>
+    )}
+    <label>
+      {discipline.regulamin_key ? "Zamień: Regulamin (PDF)" : "Regulamin (PDF, opcjonalnie)"}
+      <input type="file" name="regulamin" accept="application/pdf" />
+    </label>
+    <label>
+      Regulamin (tekst, opcjonalnie)
+      <RichTextEditor name="regulamin_text" value={discipline.regulamin_text ?? ""} />
+    </label>
+    {pdfFields.map((field) => {
+      const currentKey = discipline[field.key];
+      return (
+        <>
+          {currentKey && (
+            <div>
+              <p>
+                Obecny plik: <a href={mediaUrl(env.MEDIA_BASE_URL, currentKey)} target="_blank" rel="noopener">{field.label}.pdf</a>
+              </p>
+              <div data-remove-toggle style="margin-top:.5rem;">
+                <input type="hidden" name={field.removeName} value="" />
+                <button type="button" class="button secondary">Usuń plik</button>
+              </div>
+            </div>
+          )}
+          <label>
+            {currentKey ? `Zamień: ${field.label} (PDF)` : `${field.label} (PDF, opcjonalnie)`}
+            <input type="file" name={field.name} accept="application/pdf" />
+          </label>
+        </>
+      );
+    })}
     <label>
       Kolejność
       <input type="number" name="sort_order" value={discipline.sort_order} />

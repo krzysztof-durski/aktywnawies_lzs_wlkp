@@ -73,8 +73,8 @@ export function buildDisciplineCoverKey(ext: string): string {
   return `disciplines/${shortHash()}-cover.${ext}`;
 }
 
-export function buildKonkurencjeTileKey(ext: string): string {
-  return `konkurencje-tiles/${shortHash()}.${ext}`;
+export function buildDisciplinePdfKey(field: "regulamin" | "listy-startowe" | "wyniki"): string {
+  return `disciplines/${field}/${shortHash()}.pdf`;
 }
 
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
@@ -92,4 +92,24 @@ export async function putObject(
 
 export async function deleteObject(bucket: R2Bucket, key: string): Promise<void> {
   await bucket.delete(key);
+}
+
+export interface PdfUploadResult {
+  key: string | null;
+  error: "too_large" | "not_pdf" | null;
+}
+
+/** Validates and uploads an optional discipline PDF field (Regulamin/Listy startowe/Wyniki); no-ops if the field was left empty. */
+export async function uploadOptionalDisciplinePdf(
+  bucket: R2Bucket,
+  file: FormDataEntryValue | null,
+  field: "regulamin" | "listy-startowe" | "wyniki",
+): Promise<PdfUploadResult> {
+  if (!(file instanceof File) || file.size === 0) return { key: null, error: null };
+  if (file.size > MAX_PDF_BYTES) return { key: null, error: "too_large" };
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  if (!isPdf(bytes)) return { key: null, error: "not_pdf" };
+  const key = buildDisciplinePdfKey(field);
+  await putObject(bucket, key, bytes, "application/pdf");
+  return { key, error: null };
 }

@@ -9,8 +9,8 @@ const deleted = Astro.url.searchParams.get("deleted");
 const csrfToken = Astro.locals.csrfToken;
 ---
 
-<AdminLayout title="Dokumenty">
-  <h1>Dokumenty</h1>
+<AdminLayout title="Do pobrania">
+  <h1>Do pobrania</h1>
   {saved && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Zapisano.</p>}
   {deleted && <p class="form-error" style="background:#e8f5ea;border-color:#a8d5b0;color:#256029;">Usunięto.</p>}
   <p><a class="button" href="/admin/documents/new">Nowy dokument</a></p>

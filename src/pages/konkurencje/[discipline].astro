@@ -1,23 +1,17 @@
 ---
 const { env } = Astro.locals.runtime;
-import BaseLayout from "../../../layouts/BaseLayout.astro";
-import DocumentList from "../../../components/DocumentList.astro";
-import KonkurencjeTiles from "../../../components/KonkurencjeTiles.astro";
-import { getDiscipline, listDocumentsByDiscipline, listKonkurencjeTiles } from "../../../lib/db";
-import { KONKURENCJE_BLOCKS, isBlockSlug } from "../../../lib/nav";
-import { mediaUrl } from "../../../lib/media";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import DocumentList from "../../components/DocumentList.astro";
+import { getDiscipline, listDocumentsByDiscipline } from "../../lib/db";
+import { mediaUrl } from "../../lib/media";
 
-const { block: blockSlug, discipline: disciplineSlug } = Astro.params;
-if (!blockSlug || !isBlockSlug(blockSlug) || !disciplineSlug) {
-  return new Response("Not found", { status: 404 });
-}
+const { discipline: disciplineSlug } = Astro.params;
+if (!disciplineSlug) return new Response("Not found", { status: 404 });
 
-const block = KONKURENCJE_BLOCKS.find((b) => b.slug === blockSlug)!;
-const discipline = await getDiscipline(env.DB, blockSlug, disciplineSlug);
+const discipline = await getDiscipline(env.DB, disciplineSlug);
 if (!discipline) return new Response("Not found", { status: 404 });
 
 const { results: documents } = await listDocumentsByDiscipline(env.DB, discipline.slug);
-const { results: tiles } = await listKonkurencjeTiles(env.DB);
 ---
 
 <BaseLayout title={discipline.title}>
@@ -31,8 +25,7 @@ const { results: tiles } = await listKonkurencjeTiles(env.DB);
   ) : null}
   <div class="container">
     <p class="breadcrumb">
-      <a href="/">Strona główna</a> / <a href="/konkurencje">Konkurencje</a> /
-      <a href={`/konkurencje/${block.slug}`}>{block.title}</a>
+      <a href="/">Strona główna</a> / <a href="/konkurencje">Konkurencje</a>
     </p>
     {!discipline.cover_image_key && <h1>{discipline.title}</h1>}
     {discipline.body_html ? (
@@ -40,14 +33,31 @@ const { results: tiles } = await listKonkurencjeTiles(env.DB);
     ) : (
       <p class="empty-state">Opis dyscypliny w przygotowaniu.</p>
     )}
-    <h2>Materiały</h2>
-    <DocumentList documents={documents} mediaBaseUrl={env.MEDIA_BASE_URL} emptyLabel="Brak materiałów dla tej dyscypliny." />
-
-    {tiles.length > 0 && (
+    {(discipline.regulamin_key || discipline.listy_startowe_key || discipline.wyniki_key) && (
       <>
-        <h2>Konkurencje</h2>
-        <KonkurencjeTiles tiles={tiles} mediaBaseUrl={env.MEDIA_BASE_URL} />
+        <h2>Dokumenty konkurencji</h2>
+        <ul class="doc-list">
+          {discipline.regulamin_key && (
+            <li><a href={mediaUrl(env.MEDIA_BASE_URL, discipline.regulamin_key)}>Regulamin (PDF)</a></li>
+          )}
+          {discipline.listy_startowe_key && (
+            <li><a href={mediaUrl(env.MEDIA_BASE_URL, discipline.listy_startowe_key)}>Listy startowe</a></li>
+          )}
+          {discipline.wyniki_key && (
+            <li><a href={mediaUrl(env.MEDIA_BASE_URL, discipline.wyniki_key)}>Wyniki</a></li>
+          )}
+        </ul>
       </>
     )}
+
+    {discipline.regulamin_text && (
+      <section id="regulamin">
+        <h2>Regulamin</h2>
+        <div set:html={discipline.regulamin_text} />
+      </section>
+    )}
+
+    <h2>Materiały</h2>
+    <DocumentList documents={documents} mediaBaseUrl={env.MEDIA_BASE_URL} emptyLabel="Brak materiałów dla tej dyscypliny." />
   </div>
 </BaseLayout>

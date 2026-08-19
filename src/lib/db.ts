@@ -78,11 +78,8 @@ export interface GalleryImage {
   featured_full_width: number;
 }
 
-export type DisciplineBlock = "sportowy" | "rekreacyjny" | "integracyjny";
-
 export interface Discipline {
   id: number;
-  block: DisciplineBlock;
   slug: string;
   title: string;
   body_html: string;
@@ -91,34 +88,41 @@ export interface Discipline {
   updated_at: string;
   updated_by: number | null;
   cover_image_key: string | null;
+  regulamin_key: string | null;
+  regulamin_text: string | null;
+  listy_startowe_key: string | null;
+  wyniki_key: string | null;
+  section: string | null;
 }
 
-export function getPage(db: D1Database, slug: string) {
-  return db
-    .prepare("SELECT * FROM pages WHERE slug = ?1")
-    .bind(slug)
-    .first<PageRow>();
-}
+// Known section labels, matching the regulamin's own headings — shown as
+// suggestions in the admin form, but the field itself is free text so new
+// sections can be introduced without a code change.
+export const KNOWN_DISCIPLINE_SECTIONS = [
+  "Konkurencje sportowo-rekreacyjne",
+  "Ludowe Gry Sportowe",
+  "Imprezy towarzyszące",
+];
 
-export function upsertPage(
-  db: D1Database,
-  slug: string,
-  title: string,
-  bodyHtml: string,
-  updatedBy: number,
-) {
-  return db
-    .prepare(
-      `INSERT INTO pages (slug, title, body_html, updated_at, updated_by)
-       VALUES (?1, ?2, ?3, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), ?4)
-       ON CONFLICT(slug) DO UPDATE SET
-         title = excluded.title,
-         body_html = excluded.body_html,
-         updated_at = excluded.updated_at,
-         updated_by = excluded.updated_by`,
-    )
-    .bind(slug, title, bodyHtml, updatedBy)
-    .run();
+export const UNSECTIONED_DISCIPLINES_LABEL = "Pozostałe konkurencje";
+
+/** Buckets disciplines by `section`, ordered: known sections (regulamin order) first, then any custom section in first-seen order, then unsectioned rows last. */
+export function groupDisciplinesBySection(disciplines: Discipline[]): Map<string, Discipline[]> {
+  const bySection = new Map<string, Discipline[]>();
+  for (const d of disciplines) {
+    const key = d.section || UNSECTIONED_DISCIPLINES_LABEL;
+    const list = bySection.get(key) ?? [];
+    list.push(d);
+    bySection.set(key, list);
+  }
+  const order = [
+    ...KNOWN_DISCIPLINE_SECTIONS.filter((s) => bySection.has(s)),
+    ...Array.from(bySection.keys()).filter(
+      (s) => s !== UNSECTIONED_DISCIPLINES_LABEL && !KNOWN_DISCIPLINE_SECTIONS.includes(s),
+    ),
+    ...(bySection.has(UNSECTIONED_DISCIPLINES_LABEL) ? [UNSECTIONED_DISCIPLINES_LABEL] : []),
+  ];
+  return new Map(order.map((key) => [key, bySection.get(key)!]));
 }
 
 export function listPublishedNews(db: D1Database, limit = 20) {
@@ -162,18 +166,6 @@ export function listDocumentsByDiscipline(db: D1Database, discipline: string) {
     .all<DocumentRow>();
 }
 
-/** One query for a whole block's discipline table (Regulamin/Listy startowe/Wyniki columns), instead of N+1 per-row queries. */
-export function listDocumentsForDisciplines(db: D1Database, disciplineSlugs: string[]) {
-  if (disciplineSlugs.length === 0) return Promise.resolve({ results: [] as DocumentRow[] });
-  const placeholders = disciplineSlugs.map((_, i) => `?${i + 1}`).join(",");
-  return db
-    .prepare(
-      `SELECT * FROM documents WHERE discipline IN (${placeholders}) AND published = 1 ORDER BY sort_order ASC, created_at DESC`,
-    )
-    .bind(...disciplineSlugs)
-    .all<DocumentRow>();
-}
-
 export function listAllPublishedDocuments(db: D1Database) {
   return db
     .prepare(
@@ -190,21 +182,7 @@ export function listAllDocumentsAdmin(db: D1Database) {
     .all<DocumentRow>();
 }
 
-// The three fixed columns rendered per-discipline in a block's competition table
-// (Regulamin / Listy startowe / Wyniki) — a document's `category` must be exactly
-// one of these, with `discipline` set to the matching discipline's slug, to land
-// in that table. Anything else uploaded with `discipline` set to a *block* slug
-// (sportowy/rekreacyjny/integracyjny) instead shows as a general link at the top
-// of that block's page (e.g. "Druk zgłoszeń", "Klasyfikacja punktowa").
-export const DISCIPLINE_TABLE_CATEGORIES = ["regulamin", "listy-startowe", "wyniki"] as const;
-
-const KNOWN_DOCUMENT_CATEGORIES = [
-  "regulamin-igrzysk",
-  "program-igrzysk",
-  "harmonogram-igrzysk",
-  "klasyfikacje",
-  ...DISCIPLINE_TABLE_CATEGORIES,
-];
+const KNOWN_DOCUMENT_CATEGORIES = ["klasyfikacje"];
 
 export async function listDocumentCategorySuggestions(db: D1Database): Promise<string[]> {
   const { results } = await db.prepare("SELECT DISTINCT category FROM documents ORDER BY category ASC").all<{
@@ -265,26 +243,17 @@ export function deleteDocument(db: D1Database, id: number) {
   return db.prepare("DELETE FROM documents WHERE id = ?1").bind(id).run();
 }
 
-export function listDisciplinesByBlock(db: D1Database, block: DisciplineBlock) {
-  return db
-    .prepare(
-      `SELECT * FROM disciplines WHERE block = ?1 ORDER BY sort_order ASC, title ASC`,
-    )
-    .bind(block)
-    .all<Discipline>();
-}
-
-/** All disciplines across all blocks, for rendering the nested Konkurencje nav flyout in one query. */
+/** All disciplines, for rendering the Konkurencje nav flyout in one query. */
 export function listAllDisciplines(db: D1Database) {
   return db
-    .prepare("SELECT * FROM disciplines ORDER BY block ASC, sort_order ASC, title ASC")
+    .prepare("SELECT * FROM disciplines ORDER BY sort_order ASC, title ASC")
     .all<Discipline>();
 }
 
-export function getDiscipline(db: D1Database, block: DisciplineBlock, slug: string) {
+export function getDiscipline(db: D1Database, slug: string) {
   return db
-    .prepare("SELECT * FROM disciplines WHERE block = ?1 AND slug = ?2")
-    .bind(block, slug)
+    .prepare("SELECT * FROM disciplines WHERE slug = ?1")
+    .bind(slug)
     .first<Discipline>();
 }
 
@@ -567,45 +536,64 @@ export function getDisciplineById(db: D1Database, id: number) {
 }
 
 export interface DisciplineInput {
-  block: DisciplineBlock;
   slug: string;
   title: string;
   bodyHtml: string;
   sortOrder: number;
-  /** undefined = leave the existing cover image alone (update only); null = explicitly clear it. */
-  coverImageKey?: string | null;
+  coverImageKey: string | null;
+  regulaminKey: string | null;
+  regulaminText: string | null;
+  listyStartoweKey: string | null;
+  wynikiKey: string | null;
+  section: string | null;
 }
 
 export function createDiscipline(db: D1Database, input: DisciplineInput, updatedBy: number) {
   return db
     .prepare(
-      `INSERT INTO disciplines (block, slug, title, body_html, sort_order, cover_image_key, updated_by)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`,
+      `INSERT INTO disciplines
+         (slug, title, body_html, sort_order, cover_image_key, regulamin_key, regulamin_text, listy_startowe_key, wyniki_key, section, updated_by)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)`,
     )
-    .bind(input.block, input.slug, input.title, input.bodyHtml, input.sortOrder, input.coverImageKey ?? null, updatedBy)
+    .bind(
+      input.slug,
+      input.title,
+      input.bodyHtml,
+      input.sortOrder,
+      input.coverImageKey,
+      input.regulaminKey,
+      input.regulaminText,
+      input.listyStartoweKey,
+      input.wynikiKey,
+      input.section,
+      updatedBy,
+    )
     .run();
 }
 
 export function updateDiscipline(db: D1Database, id: number, input: DisciplineInput, updatedBy: number) {
-  if (input.coverImageKey === undefined) {
-    return db
-      .prepare(
-        `UPDATE disciplines SET
-           block = ?1, slug = ?2, title = ?3, body_html = ?4, sort_order = ?5,
-           updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), updated_by = ?6
-         WHERE id = ?7`,
-      )
-      .bind(input.block, input.slug, input.title, input.bodyHtml, input.sortOrder, updatedBy, id)
-      .run();
-  }
   return db
     .prepare(
       `UPDATE disciplines SET
-         block = ?1, slug = ?2, title = ?3, body_html = ?4, sort_order = ?5, cover_image_key = ?6,
-         updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), updated_by = ?7
-       WHERE id = ?8`,
+         slug = ?1, title = ?2, body_html = ?3, sort_order = ?4, cover_image_key = ?5,
+         regulamin_key = ?6, regulamin_text = ?7, listy_startowe_key = ?8, wyniki_key = ?9, section = ?10,
+         updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), updated_by = ?11
+       WHERE id = ?12`,
     )
-    .bind(input.block, input.slug, input.title, input.bodyHtml, input.sortOrder, input.coverImageKey, updatedBy, id)
+    .bind(
+      input.slug,
+      input.title,
+      input.bodyHtml,
+      input.sortOrder,
+      input.coverImageKey,
+      input.regulaminKey,
+      input.regulaminText,
+      input.listyStartoweKey,
+      input.wynikiKey,
+      input.section,
+      updatedBy,
+      id,
+    )
     .run();
 }
 

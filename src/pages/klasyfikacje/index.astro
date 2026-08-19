@@ -2,14 +2,33 @@
 const { env } = Astro.locals.runtime;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocumentList from "../../components/DocumentList.astro";
-import { listDocumentsByCategory } from "../../lib/db";
+import { listDocumentsByCategory, listAllDisciplines } from "../../lib/db";
+import { mediaUrl } from "../../lib/media";
 
 const { results: documents } = await listDocumentsByCategory(env.DB, "klasyfikacje");
+const { results: disciplines } = await listAllDisciplines(env.DB);
+const disciplinesWithResults = disciplines.filter((d) => d.wyniki_key);
 ---
 
 <BaseLayout title="Klasyfikacje">
   <div class="container">
     <h1>Klasyfikacje</h1>
     <DocumentList documents={documents} mediaBaseUrl={env.MEDIA_BASE_URL} emptyLabel="Klasyfikacje zostaną opublikowane wkrótce." />
+
+    {disciplinesWithResults.length > 0 && (
+      <>
+        <h2 style="margin-top:2rem;">Wyniki konkurencji</h2>
+        <ul class="doc-list">
+          {disciplinesWithResults.map((d) => (
+            <li>
+              <div class="doc-row">
+                <span>{d.title}</span>
+                <a class="button secondary" href={mediaUrl(env.MEDIA_BASE_URL, d.wyniki_key!)} target="_blank" rel="noopener">Otwórz</a>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
   </div>
 </BaseLayout>

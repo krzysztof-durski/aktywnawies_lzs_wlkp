@@ -1,12 +1,15 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
-import { KONKURENCJE_BLOCKS } from "../../../lib/nav";
+import RichTextEditor from "../../../components/admin/RichTextEditor.astro";
+import { KNOWN_DISCIPLINE_SECTIONS } from "../../../lib/db";
 
 const errorParam = Astro.url.searchParams.get("error");
 const ERROR_MESSAGES: Record<string, string> = {
-  "1": "Tytuł i blok są wymagane.",
+  "1": "Tytuł jest wymagany.",
   cover_too_large: "Zdjęcie jest za duże (limit 10MB).",
   cover_not_image: "Plik nie wygląda na prawidłowy obraz (JPEG/PNG/WebP).",
+  pdf_too_large: "Jeden z plików PDF jest za duży (limit 20MB).",
+  pdf_not_pdf: "Jeden z plików nie wygląda na prawidłowy PDF.",
 };
 const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
 const csrfToken = Astro.locals.csrfToken;
@@ -17,12 +20,6 @@ const csrfToken = Astro.locals.csrfToken;
   {errorMessage && <p class="form-error">{errorMessage}</p>}
   <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/konkurencje?csrf_token=${csrfToken}`}>
     <label>
-      Blok
-      <select name="block" required>
-        {KONKURENCJE_BLOCKS.map((block) => <option value={block.slug}>{block.title}</option>)}
-      </select>
-    </label>
-    <label>
       Tytuł
       <input type="text" name="title" required />
     </label>
@@ -31,12 +28,36 @@ const csrfToken = Astro.locals.csrfToken;
       <input type="text" name="slug" />
     </label>
     <label>
-      Opis (HTML)
-      <textarea name="body_html"></textarea>
+      Sekcja (grupa na stronie Konkurencje)
+      <input type="text" name="section" list="section-suggestions" />
+      <datalist id="section-suggestions">
+        {KNOWN_DISCIPLINE_SECTIONS.map((s) => <option value={s} />)}
+      </datalist>
+    </label>
+    <label>
+      Opis
+      <RichTextEditor name="body_html" />
     </label>
     <label>
       Zdjęcie w nagłówku strony dyscypliny (opcjonalnie)
       <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp" />
+    </label>
+    <p><strong>Regulamin</strong> — dodaj plik PDF, napisz tekst poniżej, albo jedno i drugie.</p>
+    <label>
+      Regulamin (PDF, opcjonalnie)
+      <input type="file" name="regulamin" accept="application/pdf" />
+    </label>
+    <label>
+      Regulamin (tekst, opcjonalnie)
+      <RichTextEditor name="regulamin_text" />
+    </label>
+    <label>
+      Listy startowe (PDF, opcjonalnie)
+      <input type="file" name="listy_startowe" accept="application/pdf" />
+    </label>
+    <label>
+      Wyniki (PDF, opcjonalnie)
+      <input type="file" name="wyniki" accept="application/pdf" />
     </label>
     <label>
       Kolejność

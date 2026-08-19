@@ -2,7 +2,6 @@
 const { env } = Astro.locals.runtime;
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { listDocumentCategorySuggestions, listAllDisciplinesAdmin } from "../../../lib/db";
-import { KONKURENCJE_BLOCKS } from "../../../lib/nav";
 
 const categories = await listDocumentCategorySuggestions(env.DB);
 const { results: disciplines } = await listAllDisciplinesAdmin(env.DB);
@@ -33,18 +32,16 @@ const csrfToken = Astro.locals.csrfToken;
       </datalist>
     </label>
     <label>
-      Dyscyplina lub blok (opcjonalnie)
+      Dyscyplina (opcjonalnie)
       <input type="text" name="discipline" list="discipline-suggestions" />
       <datalist id="discipline-suggestions">
         {disciplines.map((d) => <option value={d.slug} />)}
-        {KONKURENCJE_BLOCKS.map((b) => <option value={b.slug} />)}
       </datalist>
     </label>
     <p class="doc-meta">
-      Wpisz slug konkretnej konkurencji (np. <code>pilka-nozna-kobiet</code>) razem z kategorią
-      <code>regulamin</code>/<code>listy-startowe</code>/<code>wyniki</code>, aby dokument pojawił się w tabeli
-      konkurencji danego bloku. Wpisz slug całego bloku (<code>sportowy</code>/<code>rekreacyjny</code>/<code>integracyjny</code>)
-      bez konkretnej kategorii, aby dokument pojawił się jako ogólny link na górze strony bloku (np. „Druk zgłoszeń”).
+      Wpisz slug konkretnej konkurencji, aby dokument pojawił się jako dodatkowy materiał na stronie tej
+      dyscypliny. Regulamin/Listy startowe/Wyniki dyscypliny wgrywa się bezpośrednio w
+      <a href="/admin/konkurencje">Konkurencje</a>, nie tutaj.
     </p>
     <label>
       Plik PDF
