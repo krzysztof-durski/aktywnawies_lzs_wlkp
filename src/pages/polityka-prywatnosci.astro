@@ -1,0 +1,82 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Polityka prywatności">
+  <div class="container">
+    <h1>Polityka prywatności</h1>
+
+    <h2>Administrator danych</h2>
+    <p>
+      Administratorem danych osobowych przetwarzanych w związku z niniejszą stroną internetową oraz
+      V Ogólnopolskimi Igrzyskami LZS „Aktywna Wieś” jest Krajowe Zrzeszenie Ludowe Zespoły Sportowe
+      z siedzibą w Warszawie, ul. Seweryna Krzyżanowskiego 46A, 01-220 Warszawa („LZS”). Pytania
+      dotyczące przetwarzania danych osobowych można kierować na adres{" "}
+      <a href="mailto:lzs@lzs.pl">lzs@lzs.pl</a>.
+    </p>
+
+    <h2>Hosting i infrastruktura — Cloudflare</h2>
+    <p>
+      Strona działa w oparciu o infrastrukturę firmy Cloudflare, Inc., która pełni rolę podmiotu
+      przetwarzającego dane w imieniu Administratora. Cloudflare dostarcza:
+    </p>
+    <ul>
+      <li><strong>Cloudflare Workers/Pages</strong> — hosting i wykonywanie kodu strony;</li>
+      <li><strong>Cloudflare D1</strong> — bazę danych, w której przechowywane są treści strony (aktualności, dokumenty, konkurencje, dziennik zdarzeń panelu administracyjnego);</li>
+      <li><strong>Cloudflare R2</strong> — przechowywanie przesłanych plików (zdjęcia, dokumenty PDF);</li>
+      <li><strong>Cloudflare KV</strong> — przechowywanie sesji logowania administratorów strony;</li>
+      <li><strong>Cloudflare Turnstile</strong> — ochronę formularza logowania do panelu administracyjnego przed botami, bez śledzenia odwiedzających witrynę.</li>
+    </ul>
+    <p>
+      Ze względu na globalną sieć Cloudflare dane mogą być przetwarzane na serwerach zlokalizowanych
+      poza Europejskim Obszarem Gospodarczym. Więcej informacji o zasadach przetwarzania danych przez
+      Cloudflare znajduje się w{" "}
+      <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener">polityce prywatności Cloudflare</a>.
+    </p>
+
+    <h2>Pliki cookies</h2>
+    <p>
+      Strona nie wykorzystuje plików cookies do celów analitycznych ani reklamowych wobec odwiedzających
+      witrynę. Pliki cookies (sesyjny i zabezpieczający CSRF) są ustawiane wyłącznie po zalogowaniu się
+      do panelu administracyjnego i służą wyłącznie utrzymaniu sesji administratora strony.
+    </p>
+
+    <h2>Dziennik zdarzeń panelu administracyjnego</h2>
+    <p>
+      Panel administracyjny strony rejestruje działania osób zarządzających treścią (np. dodanie
+      aktualności, edycję konkurencji, przesłanie dokumentu). Dziennik ten służy wyłącznie
+      bezpieczeństwu i rozliczalności działań administratorów — nie dotyczy zwykłych odwiedzających
+      stronę. Dla każdego zdarzenia zapisywane są:
+    </p>
+    <ul>
+      <li>login administratora wykonującego działanie;</li>
+      <li>rodzaj akcji (np. utworzenie, edycja, usunięcie) oraz typ i identyfikator zmienianej treści;</li>
+      <li>szczegóły zmiany — dla edycji: konkretne pola i ich wartości przed i po zmianie; dla usunięcia: zapis usuniętej treści; dla nowo utworzonej treści: jej początkowe wartości;</li>
+      <li>adres IP oraz nagłówek przeglądarki (user agent), z którego wykonano działanie;</li>
+      <li>data i godzina zdarzenia;</li>
+      <li>w przypadku prób logowania — również nieudane próby logowania (login i adres IP), w celu ochrony przed nieautoryzowanym dostępem.</li>
+    </ul>
+    <p>
+      Hasła administratorów nigdy nie są zapisywane w dzienniku zdarzeń — przechowywany jest wyłącznie
+      ich zaszyfrowany skrót (hash) w bazie danych. Dziennik zdarzeń jest dostępny wyłącznie z poziomu
+      panelu Cloudflare (baza danych D1) dla osób posiadających do niego uprawniony dostęp — nie jest
+      publikowany ani udostępniany w panelu administracyjnym strony.
+    </p>
+
+    <h2>Wizerunek uczestników Igrzysk</h2>
+    <p>
+      Zdjęcia i relacje wideo z przebiegu V Ogólnopolskich Igrzysk LZS „Aktywna Wieś”, w tym publikowane
+      w galerii na tej stronie, są udostępniane na zasadach opisanych w{" "}
+      <a href="/informacje/regulamin-igrzysk">Regulaminie Igrzysk</a>, na podstawie zgody uczestników na
+      rozpowszechnianie wizerunku wyrażonej przy zgłoszeniu udziału.
+    </p>
+
+    <h2>Prawa osób, których dane dotyczą</h2>
+    <p>
+      Osobom, których dane osobowe są przetwarzane, przysługuje prawo dostępu do treści swoich danych
+      oraz prawo ich sprostowania, usunięcia, ograniczenia przetwarzania, przenoszenia danych oraz
+      wniesienia sprzeciwu wobec przetwarzania. Przysługuje również prawo wniesienia skargi do Prezesa
+      Urzędu Ochrony Danych Osobowych.
+    </p>
+  </div>
+</BaseLayout>

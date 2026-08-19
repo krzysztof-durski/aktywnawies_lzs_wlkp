@@ -35,6 +35,9 @@ const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił bł�
       <div class="cf-turnstile" data-sitekey={env.PUBLIC_TURNSTILE_SITE_KEY}></div>
       <button type="submit">Zaloguj</button>
     </form>
+    <p style="margin-top:1rem;font-size:.85rem;">
+      <a href="/polityka-prywatnosci">Polityka prywatności</a>
+    </p>
   </div>
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </BaseLayout>
