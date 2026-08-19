@@ -3,10 +3,10 @@
 // command, then run it yourself against the real D1 database and email the
 // credentials to the client out-of-band.
 //
-// This always creates a *superadmin* — it's meant for the one root account
-// that bootstraps everything else. Any additional admin or superadmin
-// accounts after that should be created in-app at /admin/uzytkownicy by an
-// existing superadmin, not via this script.
+// This is meant for the one root account that bootstraps everything else —
+// every admin account is equal (no elevated role), so any additional accounts
+// after that should be created in-app at /admin/uzytkownicy by an existing
+// admin, not via this script.
 //
 // Usage: npx tsx scripts/create-admin.ts <username>
 
@@ -26,7 +26,7 @@ async function main() {
   }
 
   const rl = createInterface({ input: stdin, output: stdout });
-  const password = await rl.question("Password for new superadmin (min 12 chars, visible as typed): ");
+  const password = await rl.question("Password for new admin (min 12 chars, visible as typed): ");
   const confirm = await rl.question("Confirm password: ");
   rl.close();
 
@@ -41,9 +41,9 @@ async function main() {
 
   const { hash, salt } = await hashPassword(password);
 
-  const sql = `INSERT INTO admin_users (username, password_hash, password_salt, role) VALUES ('${sqlEscape(
+  const sql = `INSERT INTO admin_users (username, password_hash, password_salt) VALUES ('${sqlEscape(
     username,
-  )}', '${hash}', '${salt}', 'superadmin');`;
+  )}', '${hash}', '${salt}');`;
 
   console.log("\nReview the SQL below, then run it yourself:\n");
   console.log(sql);

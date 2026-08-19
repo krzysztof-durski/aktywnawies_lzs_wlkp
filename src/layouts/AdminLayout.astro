@@ -25,21 +25,14 @@ const csrfToken = Astro.locals.csrfToken;
         <nav>
           <a href="/admin">Pulpit</a>
           <a href="/admin/news">Aktualności</a>
-          <a href="/admin/documents">Dokumenty</a>
+          <a href="/admin/documents">Do pobrania</a>
           <a href="/admin/gallery">Galeria</a>
           <a href="/admin/gallery/karuzela">Karuzela zdjęć</a>
-          {admin?.role === "superadmin" && (
-            <>
-              <p style="margin:1rem 0 .25rem;opacity:.6;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;">Superadmin</p>
-              <a href="/admin/pages">Strony</a>
-              <a href="/admin/konkurencje">Konkurencje</a>
-              <a href="/admin/uzytkownicy">Użytkownicy</a>
-              <a href="/admin/dziennik">Dziennik zdarzeń</a>
-              <a href="/admin/ustawienia">Ustawienia strony</a>
-            </>
-          )}
+          <a href="/admin/konkurencje">Konkurencje</a>
+          <a href="/admin/uzytkownicy">Użytkownicy</a>
         </nav>
-        <form method="POST" action={`/api/admin/logout?csrf_token=${csrfToken}`} style="margin-top:1.5rem;">
+        <a href="/polityka-prywatnosci" style="margin-top:1.5rem;display:block;font-size:.85rem;opacity:.75;">Polityka prywatności</a>
+        <form method="POST" action={`/api/admin/logout?csrf_token=${csrfToken}`} style="margin-top:.75rem;">
           <button type="submit" class="danger">Wyloguj</button>
         </form>
       </aside>

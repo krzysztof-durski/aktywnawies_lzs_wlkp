@@ -10,18 +10,6 @@ import {
 
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
-const SUPERADMIN_ONLY_PREFIXES = [
-  "/admin/uzytkownicy",
-  "/api/admin/uzytkownicy",
-  "/admin/dziennik",
-  "/admin/ustawienia",
-  "/api/admin/ustawienia",
-  "/admin/pages",
-  "/api/admin/pages",
-  "/admin/konkurencje",
-  "/api/admin/konkurencje",
-];
-
 // TODO: narrow img-src/connect-src to the real R2 media custom domain once it's provisioned.
 const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": [
@@ -99,13 +87,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         return context.redirect("/admin/login");
       }
 
-      context.locals.admin = { id: session.admin_user_id, username: session.admin_username, role: session.admin_role };
-
-      const isSuperadminOnly = SUPERADMIN_ONLY_PREFIXES.some((prefix) => pathname.startsWith(prefix));
-      if (isSuperadminOnly && session.admin_role !== "superadmin") {
-        if (isAdminApi) return withSecurityHeaders(new Response("Forbidden", { status: 403 }));
-        return context.redirect("/admin?error=forbidden");
-      }
+      context.locals.admin = { id: session.admin_user_id, username: session.admin_username };
 
       if (isAdminApi && MUTATING_METHODS.has(context.request.method)) {
         // Read from the query string (set on every admin form's `action`) rather than a

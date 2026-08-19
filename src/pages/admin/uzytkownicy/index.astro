@@ -37,24 +37,16 @@ const currentAdminId = Astro.locals.admin?.id;
       Powtórz hasło
       <input type="password" name="confirm_password" required minlength="12" />
     </label>
-    <label>
-      Rola
-      <select name="role">
-        <option value="admin">Administrator</option>
-        <option value="superadmin">Superadministrator</option>
-      </select>
-    </label>
     <button type="submit">Utwórz użytkownika</button>
   </form>
 
   <h2>Lista użytkowników</h2>
   <table class="admin-table">
-    <thead><tr><th>Login</th><th>Rola</th><th>Status</th><th>Utworzono</th><th></th></tr></thead>
+    <thead><tr><th>Login</th><th>Status</th><th>Utworzono</th><th></th></tr></thead>
     <tbody>
       {users.map((user) => (
         <tr>
           <td>{user.username}</td>
-          <td>{user.role === "superadmin" ? "Superadministrator" : "Administrator"}</td>
           <td>{user.disabled ? "Wyłączony" : "Aktywny"}</td>
           <td>{new Date(user.created_at).toLocaleDateString("pl-PL")}</td>
           <td>

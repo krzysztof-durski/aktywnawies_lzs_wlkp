@@ -1,15 +1,14 @@
 ---
-const { env } = Astro.locals.runtime;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { getPage } from "../lib/db";
-
-const page = await getPage(env.DB, "kontakt");
-if (!page) return new Response("Not found", { status: 404 });
 ---
 
-<BaseLayout title={page.title}>
+<BaseLayout title="Kontakt">
   <div class="container">
-    <h1>{page.title}</h1>
-    <div set:html={page.body_html} />
+    <h1>Kontakt</h1>
+    <h2>Krajowe Zrzeszenie Ludowe Zespoły Sportowe</h2>
+    <p>01-220 Warszawa, ul. S. Krzyżanowskiego 46a</p>
+    <p>Telefon: <a href="tel:+48226319919">22 631-99-19</a></p>
+    <p>E-mail: <a href="mailto:lzs@lzs.pl">lzs@lzs.pl</a></p>
+    <p>Strona internetowa: <a href="https://www.lzs.pl" target="_blank" rel="noopener">www.lzs.pl</a></p>
   </div>
 </BaseLayout>

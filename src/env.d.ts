@@ -6,7 +6,6 @@ declare namespace App {
     admin?: {
       id: number;
       username: string;
-      role: "admin" | "superadmin";
     };
     csrfToken?: string;
   }

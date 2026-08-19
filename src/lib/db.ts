@@ -3,8 +3,6 @@
 // `.bind(...)`, never interpolated into the SQL string. That's what makes
 // injection structurally impossible — keep it that way in every new query.
 
-export type AdminRole = "admin" | "superadmin";
-
 export interface AdminUser {
   id: number;
   username: string;
@@ -13,7 +11,6 @@ export interface AdminUser {
   password_algo: string;
   created_at: string;
   disabled: number;
-  role: AdminRole;
 }
 
 export interface Session {
@@ -23,14 +20,6 @@ export interface Session {
   expires_at: string;
   user_agent: string | null;
   ip: string | null;
-}
-
-export interface PageRow {
-  slug: string;
-  title: string;
-  body_html: string;
-  updated_at: string;
-  updated_by: number | null;
 }
 
 export interface NewsPost {
@@ -496,22 +485,18 @@ export function createSession(
 export function getValidSessionByTokenHash(db: D1Database, tokenHash: string) {
   return db
     .prepare(
-      `SELECT sessions.*, admin_users.username AS admin_username, admin_users.role AS admin_role
+      `SELECT sessions.*, admin_users.username AS admin_username
        FROM sessions
        JOIN admin_users ON admin_users.id = sessions.admin_user_id
        WHERE sessions.id = ?1 AND sessions.expires_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
          AND admin_users.disabled = 0`,
     )
     .bind(tokenHash)
-    .first<Session & { admin_username: string; admin_role: AdminRole }>();
+    .first<Session & { admin_username: string }>();
 }
 
 export function deleteSession(db: D1Database, tokenHash: string) {
   return db.prepare("DELETE FROM sessions WHERE id = ?1").bind(tokenHash).run();
-}
-
-export function listAllPages(db: D1Database) {
-  return db.prepare("SELECT * FROM pages ORDER BY slug ASC").all<PageRow>();
 }
 
 export function listAllNews(db: D1Database) {
@@ -573,7 +558,7 @@ export function deleteNewsPost(db: D1Database, id: number) {
 
 export function listAllDisciplinesAdmin(db: D1Database) {
   return db
-    .prepare("SELECT * FROM disciplines ORDER BY block ASC, sort_order ASC, title ASC")
+    .prepare("SELECT * FROM disciplines ORDER BY sort_order ASC, title ASC")
     .all<Discipline>();
 }
 
@@ -683,13 +668,10 @@ export function createAdminUser(
   username: string,
   passwordHash: string,
   passwordSalt: string,
-  role: AdminRole,
 ) {
   return db
-    .prepare(
-      "INSERT INTO admin_users (username, password_hash, password_salt, role) VALUES (?1, ?2, ?3, ?4)",
-    )
-    .bind(username, passwordHash, passwordSalt, role)
+    .prepare("INSERT INTO admin_users (username, password_hash, password_salt) VALUES (?1, ?2, ?3)")
+    .bind(username, passwordHash, passwordSalt)
     .run();
 }
 
@@ -702,19 +684,7 @@ export function setAdminUserDisabled(db: D1Database, id: number, disabled: boole
 }
 
 // --- Audit log -----------------------------------------------------
-
-export interface AuditLogEntry {
-  id: number;
-  admin_user_id: number | null;
-  username: string;
-  action: string;
-  target_type: string | null;
-  target_id: string | null;
-  details: string | null;
-  ip: string | null;
-  user_agent: string | null;
-  created_at: string;
-}
+// Write-only from the app; read via the D1 dashboard/wrangler (see README).
 
 export interface AuditLogInput {
   adminUserId: number | null;
@@ -746,13 +716,6 @@ export function logAuditEvent(db: D1Database, entry: AuditLogInput) {
     .run();
 }
 
-export function listAuditLog(db: D1Database, limit = 200) {
-  return db
-    .prepare("SELECT * FROM audit_log ORDER BY created_at DESC, id DESC LIMIT ?1")
-    .bind(limit)
-    .all<AuditLogEntry>();
-}
-
 // --- Site settings -----------------------------------------------------
 
 export async function isSiteOffline(db: D1Database): Promise<boolean> {
@@ -776,52 +739,3 @@ export function setSiteSetting(db: D1Database, key: string, value: string) {
     .run();
 }
 
-// --- Konkurencje tiles (photo grid shown on Konkurencje pages) -----------------------------------------------------
-
-export interface KonkurencjeTile {
-  id: number;
-  title: string;
-  image_key: string | null;
-  link_url: string;
-  sort_order: number;
-  created_at: string;
-}
-
-export function listKonkurencjeTiles(db: D1Database) {
-  return db.prepare("SELECT * FROM konkurencje_tiles ORDER BY sort_order ASC, created_at ASC").all<KonkurencjeTile>();
-}
-
-export function getKonkurencjeTileById(db: D1Database, id: number) {
-  return db.prepare("SELECT * FROM konkurencje_tiles WHERE id = ?1").bind(id).first<KonkurencjeTile>();
-}
-
-export interface KonkurencjeTileInput {
-  title: string;
-  linkUrl: string;
-  sortOrder: number;
-  imageKey?: string | null;
-}
-
-export function createKonkurencjeTile(db: D1Database, input: KonkurencjeTileInput) {
-  return db
-    .prepare("INSERT INTO konkurencje_tiles (title, image_key, link_url, sort_order) VALUES (?1, ?2, ?3, ?4)")
-    .bind(input.title, input.imageKey ?? null, input.linkUrl, input.sortOrder)
-    .run();
-}
-
-export function updateKonkurencjeTile(db: D1Database, id: number, input: KonkurencjeTileInput) {
-  if (input.imageKey === undefined) {
-    return db
-      .prepare("UPDATE konkurencje_tiles SET title = ?1, link_url = ?2, sort_order = ?3 WHERE id = ?4")
-      .bind(input.title, input.linkUrl, input.sortOrder, id)
-      .run();
-  }
-  return db
-    .prepare("UPDATE konkurencje_tiles SET title = ?1, link_url = ?2, sort_order = ?3, image_key = ?4 WHERE id = ?5")
-    .bind(input.title, input.linkUrl, input.sortOrder, input.imageKey, id)
-    .run();
-}
-
-export function deleteKonkurencjeTile(db: D1Database, id: number) {
-  return db.prepare("DELETE FROM konkurencje_tiles WHERE id = ?1").bind(id).run();
-}
