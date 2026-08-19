@@ -1,5 +1,6 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+import RichTextEditor from "../../../components/admin/RichTextEditor.astro";
 
 const errorParam = Astro.url.searchParams.get("error");
 const ERROR_MESSAGES: Record<string, string> = {
@@ -28,8 +29,8 @@ const csrfToken = Astro.locals.csrfToken;
       <input type="text" name="excerpt" />
     </label>
     <label>
-      Treść (HTML)
-      <textarea name="body_html"></textarea>
+      Treść
+      <RichTextEditor name="body_html" />
     </label>
     <label>
       Zdjęcie okładkowe (opcjonalnie)

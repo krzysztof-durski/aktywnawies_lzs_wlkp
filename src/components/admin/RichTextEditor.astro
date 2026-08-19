@@ -1,0 +1,81 @@
+---
+interface Props {
+  name: string;
+  value?: string;
+  id?: string;
+}
+
+const { name, value = "", id } = Astro.props;
+const editorId = id ?? `rte-${name}`;
+---
+
+<div class="rte" data-rte>
+  <div class="rte__toolbar" role="toolbar" aria-label="Formatowanie tekstu">
+    <button type="button" data-cmd="formatBlock" data-value="H2" title="Nagłówek">Nagłówek</button>
+    <button type="button" data-cmd="formatBlock" data-value="P" title="Akapit">Akapit</button>
+    <span class="rte__sep"></span>
+    <button type="button" data-cmd="insertUnorderedList" title="Lista punktowana">• Lista</button>
+    <button type="button" data-cmd="insertOrderedList" title="Lista numerowana">1. Lista</button>
+    <span class="rte__sep"></span>
+    <button type="button" data-cmd="createLink" title="Wstaw link">Link</button>
+    <button type="button" data-cmd="unlink" title="Usuń link">Usuń link</button>
+    <span class="rte__sep"></span>
+    <button type="button" data-cmd="removeFormat" title="Wyczyść formatowanie">Wyczyść</button>
+  </div>
+  <div id={editorId} class="rte__editor" contenteditable="true" set:html={value || "<p><br></p>"} />
+  <textarea name={name} class="rte__source" hidden>{value}</textarea>
+</div>
+
+<script>
+  function initRte(root: HTMLElement) {
+    const editor = root.querySelector<HTMLElement>(".rte__editor");
+    const source = root.querySelector<HTMLTextAreaElement>(".rte__source");
+    if (!editor || !source) return;
+
+    // Forces legacy tag-based output (<b>/<i>/<ul>/...) instead of inline
+    // style="" spans, which is both cleaner saved HTML and avoids a Chromium
+    // quirk where a fresh contenteditable's formatting-toggle detection can
+    // misreport on the very first command.
+    editor.addEventListener(
+      "focus",
+      () => document.execCommand("styleWithCSS", false, "false"),
+      { once: true },
+    );
+
+    const sync = () => {
+      // The editor is seeded with an empty <p><br></p> (Chromium needs a real block
+      // node present, or its formatting-toggle state detection misfires on the very
+      // first click) — collapse that back down to "" so an untouched field still
+      // saves as empty rather than a stray empty paragraph.
+      const isEmpty = editor.textContent!.trim() === "" && !editor.querySelector("img, hr");
+      source.value = isEmpty ? "" : editor.innerHTML;
+    };
+
+    editor.addEventListener("input", sync);
+    editor.addEventListener("blur", sync);
+    root.closest("form")?.addEventListener("submit", sync);
+
+    const toolbar = root.querySelector<HTMLElement>(".rte__toolbar");
+    // A toolbar button stealing focus on mousedown collapses/clears the editor's
+    // text selection before the click handler's execCommand ever runs (the
+    // classic contenteditable-toolbar bug) — preventDefault here keeps focus
+    // (and the selection) in the editor the whole time.
+    toolbar?.addEventListener("mousedown", (e) => e.preventDefault());
+
+    root.querySelectorAll<HTMLButtonElement>(".rte__toolbar button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const cmd = button.dataset.cmd!;
+        let value = button.dataset.value ?? "";
+        if (cmd === "createLink") {
+          const url = window.prompt("Adres URL:", "https://");
+          if (!url) return;
+          value = url;
+        }
+        document.execCommand(cmd, false, value);
+        sync();
+      });
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-rte]").forEach(initRte);
+</script>

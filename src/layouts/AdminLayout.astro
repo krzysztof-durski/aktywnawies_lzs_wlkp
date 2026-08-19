@@ -46,6 +46,23 @@ const csrfToken = Astro.locals.csrfToken;
           if (!confirm(form.dataset.confirm)) e.preventDefault();
         });
       });
+
+      // "Usuń plik/zdjęcie" toggles — a button (not a native checkbox) that flips a
+      // hidden field's value between "" and "on" and relabels itself so the marked-
+      // for-removal state is obvious before the form is actually submitted.
+      document.querySelectorAll<HTMLElement>("[data-remove-toggle]").forEach((wrap) => {
+        const hidden = wrap.querySelector<HTMLInputElement>('input[type="hidden"]');
+        const button = wrap.querySelector<HTMLButtonElement>("button");
+        if (!hidden || !button) return;
+        const defaultLabel = button.textContent ?? "";
+        button.addEventListener("click", () => {
+          const willRemove = hidden.value !== "on";
+          hidden.value = willRemove ? "on" : "";
+          button.classList.toggle("danger", willRemove);
+          button.classList.toggle("secondary", !willRemove);
+          button.textContent = willRemove ? "Cofnij usunięcie" : defaultLabel;
+        });
+      });
     </script>
   </body>
 </html>

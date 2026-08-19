@@ -1,6 +1,7 @@
 ---
 const { env } = Astro.locals.runtime;
 import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import RichTextEditor from "../../../../components/admin/RichTextEditor.astro";
 import { getNewsPostById } from "../../../../lib/db";
 import { mediaUrl } from "../../../../lib/media";
 
@@ -37,16 +38,17 @@ const csrfToken = Astro.locals.csrfToken;
       <input type="text" name="excerpt" value={post.excerpt ?? ""} />
     </label>
     <label>
-      Treść (HTML)
-      <textarea name="body_html">{post.body_html}</textarea>
+      Treść
+      <RichTextEditor name="body_html" value={post.body_html} />
     </label>
     {post.cover_image_key && (
       <div>
         <p>Obecna okładka:</p>
         <img src={mediaUrl(env.MEDIA_BASE_URL, post.cover_image_key)} alt="" style="max-width:240px;border-radius:6px;" />
-        <label style="font-weight:400;display:flex;gap:.4rem;align-items:center;margin-top:.5rem;">
-          <input type="checkbox" name="remove_cover" style="width:auto;" /> Usuń okładkę
-        </label>
+        <div data-remove-toggle style="margin-top:.5rem;">
+          <input type="hidden" name="remove_cover" value="" />
+          <button type="button" class="button secondary">Usuń okładkę</button>
+        </div>
       </div>
     )}
     <label>
