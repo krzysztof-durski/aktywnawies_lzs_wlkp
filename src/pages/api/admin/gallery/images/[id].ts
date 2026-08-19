@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getGalleryImageById, deleteGalleryImage, updateGalleryImageFlags } from "../../../../../lib/db";
 import { deleteObject } from "../../../../../lib/r2";
-import { audit } from "../../../../../lib/audit";
+import { audit, diffFields, snapshotFields } from "../../../../../lib/audit";
 
 export const prerender = false;
 
@@ -26,7 +26,8 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
     await deleteGalleryImage(env.DB, id);
     await deleteObject(env.MEDIA_BUCKET, image.file_key);
     if (image.thumb_key) await deleteObject(env.MEDIA_BUCKET, image.thumb_key);
-    await audit(env.DB, request, locals.admin, "gallery_image.delete", { type: "gallery_image", id });
+    const deleteDetails = snapshotFields(image, ["caption", "album_id", "file_key"]);
+    await audit(env.DB, request, locals.admin, "gallery_image.delete", { type: "gallery_image", id }, deleteDetails);
     return new Response(null, { status: 303, headers: { Location: `${backTo}?deleted=1` } });
   }
 
@@ -40,14 +41,12 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
       featured,
       featuredOrder: image.featured_order,
     });
-    await audit(
-      env.DB,
-      request,
-      locals.admin,
-      "gallery_image.update_flags",
-      { type: "gallery_image", id },
-      `wykluczone_z_glownej=${excludeFromMain}, wyroznione=${featured}`,
+    const details = diffFields(
+      { exclude_from_main: image.exclude_from_main, featured: image.featured },
+      { exclude_from_main: excludeFromMain ? 1 : 0, featured: featured ? 1 : 0 },
+      ["exclude_from_main", "featured"],
     );
+    await audit(env.DB, request, locals.admin, "gallery_image.update_flags", { type: "gallery_image", id }, details);
     return new Response(null, { status: 303, headers: { Location: `${backTo}?flags_saved=1` } });
   }
 

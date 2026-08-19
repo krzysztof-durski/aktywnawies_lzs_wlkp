@@ -27,7 +27,7 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
     locals.admin,
     disable ? "admin_user.disable" : "admin_user.enable",
     { type: "admin_user", id },
-    target.username,
+    JSON.stringify({ username: target.username, disabled: { from: !!target.disabled, to: disable } }),
   );
 
   return new Response(null, { status: 303, headers: { Location: "/admin/uzytkownicy?saved=1" } });

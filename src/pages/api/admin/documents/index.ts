@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { createDocument } from "../../../../lib/db";
 import { buildDocumentKey, isPdf, putObject, deleteObject, MAX_PDF_BYTES } from "../../../../lib/r2";
-import { audit } from "../../../../lib/audit";
+import { audit, diffFields } from "../../../../lib/audit";
 
 export const prerender = false;
 
@@ -43,6 +43,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     throw err;
   }
 
-  await audit(env.DB, request, locals.admin, "document.create", { type: "document", id: documentId ?? null }, `${title} (${category})`);
+  const details = diffFields(null, { title, category, discipline, file_key: key }, ["title", "category", "discipline", "file_key"]);
+  await audit(env.DB, request, locals.admin, "document.create", { type: "document", id: documentId ?? null }, details ?? `${title} (${category})`);
   return new Response(null, { status: 303, headers: { Location: "/admin/documents?saved=1" } });
 };

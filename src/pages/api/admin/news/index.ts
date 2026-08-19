@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { createNewsPost, type NewsInput } from "../../../../lib/db";
 import { slugify } from "../../../../lib/slugify";
 import { buildNewsCoverKey, detectImageType, putObject, deleteObject, MAX_IMAGE_BYTES } from "../../../../lib/r2";
-import { audit } from "../../../../lib/audit";
+import { audit, diffFields } from "../../../../lib/audit";
 
 export const prerender = false;
 
@@ -51,6 +51,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (coverImageKey) await deleteObject(env.MEDIA_BUCKET, coverImageKey);
     throw err;
   }
-  await audit(env.DB, request, locals.admin, "news.create", { type: "news_post", id: newsId ?? null }, title);
+  const details = diffFields(
+    null,
+    { title, slug: input.slug, excerpt: input.excerpt, body_html: input.bodyHtml, status, cover_image_key: coverImageKey },
+    ["title", "slug", "excerpt", "body_html", "status", "cover_image_key"],
+  );
+  await audit(env.DB, request, locals.admin, "news.create", { type: "news_post", id: newsId ?? null }, details ?? title);
   return new Response(null, { status: 303, headers: { Location: "/admin/news?saved=1" } });
 };

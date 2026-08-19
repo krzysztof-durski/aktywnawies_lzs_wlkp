@@ -53,13 +53,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   if (images.length > 0) {
+    const captions = images.map((img) => img.caption).join(", ");
     await audit(
       env.DB,
       request,
       locals.admin,
       "gallery_image.upload",
       { type: "gallery_album", id: albumId },
-      `${images.length} zdjęć do „${album.title}"${skipped > 0 ? `, pominięto ${skipped}` : ""}`,
+      `${images.length} zdjęć do „${album.title}" [${captions}]${skipped > 0 ? `, pominięto ${skipped}` : ""}`,
     );
   }
 

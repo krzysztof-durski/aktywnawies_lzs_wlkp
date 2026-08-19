@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getGalleryAlbumById, listGalleryImages, deleteGalleryAlbum } from "../../../../../lib/db";
 import { deleteObject } from "../../../../../lib/r2";
-import { audit } from "../../../../../lib/audit";
+import { audit, snapshotFields } from "../../../../../lib/audit";
 
 export const prerender = false;
 
@@ -27,7 +27,8 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
 
   // gallery_images rows cascade-delete with the album via the FK ON DELETE CASCADE.
   await deleteGalleryAlbum(env.DB, id);
-  await audit(env.DB, request, locals.admin, "gallery_album.delete", { type: "gallery_album", id }, album.title);
+  const details = snapshotFields(album, ["title", "slug", "description", "is_private"]);
+  await audit(env.DB, request, locals.admin, "gallery_album.delete", { type: "gallery_album", id }, details ?? album.title);
 
   return new Response(null, { status: 303, headers: { Location: "/admin/gallery?deleted=1" } });
 };

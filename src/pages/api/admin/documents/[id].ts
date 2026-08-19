@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getDocumentById, deleteDocument, updateDocument } from "../../../../lib/db";
 import { buildDocumentKey, deleteObject, isPdf, putObject, MAX_PDF_BYTES } from "../../../../lib/r2";
-import { audit } from "../../../../lib/audit";
+import { audit, diffFields, snapshotFields } from "../../../../lib/audit";
 
 export const prerender = false;
 
@@ -20,7 +20,8 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
   if (intent === "delete") {
     await deleteDocument(env.DB, id);
     await deleteObject(env.MEDIA_BUCKET, doc.file_key);
-    await audit(env.DB, request, locals.admin, "document.delete", { type: "document", id }, doc.title);
+    const deleteDetails = snapshotFields(doc, ["title", "category", "discipline"]);
+    await audit(env.DB, request, locals.admin, "document.delete", { type: "document", id }, deleteDetails ?? doc.title);
     return new Response(null, { status: 303, headers: { Location: "/admin/documents?deleted=1" } });
   }
 
@@ -58,7 +59,12 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
 
     if (newKey) await deleteObject(env.MEDIA_BUCKET, doc.file_key);
 
-    await audit(env.DB, request, locals.admin, "document.update", { type: "document", id }, `${title} (${category})`);
+    const updateDetails = diffFields(
+      doc,
+      { title, category, discipline, file_key: newKey ?? doc.file_key },
+      ["title", "category", "discipline", "file_key"],
+    );
+    await audit(env.DB, request, locals.admin, "document.update", { type: "document", id }, updateDetails ?? `${title} (${category})`);
     return new Response(null, { status: 303, headers: { Location: "/admin/documents?saved=1" } });
   }
 

@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { getNewsPostById, updateNewsPost, deleteNewsPost, type NewsInput } from "../../../../lib/db";
 import { slugify } from "../../../../lib/slugify";
 import { buildNewsCoverKey, detectImageType, putObject, deleteObject, MAX_IMAGE_BYTES } from "../../../../lib/r2";
-import { audit } from "../../../../lib/audit";
+import { audit, diffFields, snapshotFields } from "../../../../lib/audit";
 
 export const prerender = false;
 
@@ -25,7 +25,8 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
     const existing = await getNewsPostById(env.DB, id);
     await deleteNewsPost(env.DB, id);
     if (existing?.cover_image_key) await deleteObject(env.MEDIA_BUCKET, existing.cover_image_key);
-    await audit(env.DB, request, locals.admin, "news.delete", { type: "news_post", id }, existing?.title);
+    const details = snapshotFields(existing, ["title", "slug", "excerpt", "status"]);
+    await audit(env.DB, request, locals.admin, "news.delete", { type: "news_post", id }, details ?? existing?.title);
     return new Response(null, { status: 303, headers: { Location: "/admin/news?deleted=1" } });
   }
 
@@ -82,6 +83,12 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
     await deleteObject(env.MEDIA_BUCKET, oldKey);
   }
 
-  await audit(env.DB, request, locals.admin, "news.update", { type: "news_post", id }, title);
+  const resolvedCoverKey = coverImageKey === undefined ? existing?.cover_image_key ?? null : coverImageKey;
+  const details = diffFields(
+    existing,
+    { title, slug: input.slug, excerpt: input.excerpt, body_html: input.bodyHtml, status, cover_image_key: resolvedCoverKey },
+    ["title", "slug", "excerpt", "body_html", "status", "cover_image_key"],
+  );
+  await audit(env.DB, request, locals.admin, "news.update", { type: "news_post", id }, details ?? title);
   return new Response(null, { status: 303, headers: { Location: "/admin/news?saved=1" } });
 };

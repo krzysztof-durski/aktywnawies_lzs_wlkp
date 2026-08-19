@@ -25,7 +25,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }));
 
   await saveCarouselOrder(env.DB, updates);
-  await audit(env.DB, request, locals.admin, "gallery_carousel.reorder", { type: "carousel", id: null }, `${ids.length} zdjęć`);
+  const order = updates.map((u, i) => `${i + 1}:#${u.id}${u.fullWidth ? "(full)" : ""}`).join(", ");
+  await audit(env.DB, request, locals.admin, "gallery_carousel.reorder", { type: "carousel", id: null }, order);
 
   return new Response(null, { status: 303, headers: { Location: "/admin/gallery/karuzela?saved=1" } });
 };

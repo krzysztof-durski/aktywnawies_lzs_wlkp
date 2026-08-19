@@ -22,13 +22,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }));
 
   await bulkUpdateGalleryImageFlags(env.DB, updates);
+  const summary = updates
+    .map((u) => `#${u.id}(wyróżnione=${u.featured}${u.caption ? `, podpis="${u.caption}"` : ""})`)
+    .join(", ");
   await audit(
     env.DB,
     request,
     locals.admin,
     "gallery_image.bulk_update_flags",
     { type: "gallery_image", id: null },
-    `${updates.length} zdjęć: ids=${ids.join(",")}`,
+    `${updates.length} zdjęć: ${summary}`,
   );
 
   return new Response(null, { status: 303, headers: { Location: `${returnTo}?flags_saved=1` } });
