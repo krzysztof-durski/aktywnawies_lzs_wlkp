@@ -4,7 +4,6 @@ import { Image } from "astro:assets";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import NewsCard from "../components/NewsCard.astro";
 import Carousel from "../components/Carousel.astro";
-import PartnersLogoStrip from "../components/PartnersLogoStrip.astro";
 import { listPublishedNews, listFeaturedImages } from "../lib/db";
 import aktywnaWiesLogo from "../assets/logo/AKTYWNA WIEŚ (3).png";
 
@@ -80,7 +79,5 @@ const { results: featuredImages } = await listFeaturedImages(env.DB);
         </a>
       </div>
     </section>
-
-    <PartnersLogoStrip />
   </div>
 </BaseLayout>

@@ -4,7 +4,8 @@ import { Image } from "astro:assets";
 import "../styles/global.css";
 import { INFORMACJE_ITEMS } from "../lib/nav";
 import { listAllDisciplines, groupDisciplinesBySection } from "../lib/db";
-import lzsLogo from "../assets/logo/lzs-logo-150dpi.jpg";
+import PartnersLogoStrip from "../components/PartnersLogoStrip.astro";
+import lzsLogo from "../assets/logo/lzs-logo-150dpi.png";
 import aktywnaWiesLogo from "../assets/logo/AKTYWNA WIEŚ (3).png";
 import devLogo from "../assets/dev-logo/Logo_KD_V1.0.png";
 
@@ -17,6 +18,10 @@ const { title, description = "V Ogólnopolskie Igrzyska LZS „Aktywna Wieś” 
 
 const { results: allDisciplines } = await listAllDisciplines(env.DB);
 const disciplinesBySection = groupDisciplinesBySection(allDisciplines);
+
+// The full breakdown (with written lists) already lives on this page — showing
+// the flat logo strip again right above it would just be a duplicate.
+const showPartnersStrip = Astro.url.pathname !== "/informacje/organizatorzy";
 ---
 
 <html lang="pl">
@@ -73,40 +78,15 @@ const disciplinesBySection = groupDisciplinesBySection(allDisciplines);
         </nav>
       </div>
     </header>
-    <script>
-      const toggle = document.querySelector<HTMLButtonElement>(".nav-toggle");
-      const nav = document.getElementById("site-nav");
-      toggle?.addEventListener("click", () => {
-        const isOpen = nav?.classList.toggle("is-open");
-        toggle.setAttribute("aria-expanded", String(Boolean(isOpen)));
-      });
-
-      // Informacje/Konkurencje open on hover only (pure CSS, see global.css) — the
-      // trigger isn't a link and does nothing on click. On touch devices there is
-      // no hover at all, so this same click still needs to open the dropdown there;
-      // matchMedia keeps it from doing anything on devices that do support hover.
-      if (window.matchMedia("(hover: none)").matches) {
-        document.querySelectorAll<HTMLButtonElement>(".nav-dropdown__trigger").forEach((trigger) => {
-          trigger.addEventListener("click", () => {
-            const parent = trigger.closest(".nav-dropdown");
-            const isOpen = parent?.classList.toggle("is-open");
-            trigger.setAttribute("aria-expanded", String(Boolean(isOpen)));
-          });
-        });
-
-        // Same story one level down: the Konkurencje section headers (e.g.
-        // "Ludowe Gry Sportowe") are buttons, not links — nothing to navigate
-        // to — so touch needs its own tap-to-open toggle for their flyouts too.
-        document.querySelectorAll<HTMLButtonElement>(".flyout-trigger").forEach((trigger) => {
-          trigger.addEventListener("click", () => {
-            trigger.closest(".dropdown-item")?.classList.toggle("is-open");
-          });
-        });
-      }
-    </script>
+    <script src="../scripts/nav.ts"></script>
 
     <main>
       <slot />
+      {showPartnersStrip && (
+        <div class="container">
+          <PartnersLogoStrip />
+        </div>
+      )}
     </main>
 
     <footer class="site-footer">

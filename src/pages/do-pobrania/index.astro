@@ -3,7 +3,7 @@ const { env } = Astro.locals.runtime;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocumentList from "../../components/DocumentList.astro";
 import { listAllPublishedDocuments, type DocumentRow } from "../../lib/db";
-import regulaminUrl from "../../assets/docs/Regulamin_tymczasowy.pdf?url";
+import regulaminUrl from "../../assets/docs/Regulamin Aktywna Wieś Szreniawa.pdf?url";
 
 const { results: documents } = await listAllPublishedDocuments(env.DB);
 
@@ -23,7 +23,7 @@ const categories = Object.keys(grouped).sort();
       <ul class="doc-list">
         <li>
           <div class="doc-row">
-            <span>Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś” (wersja robocza)</span>
+            <span>Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś”</span>
             <a class="button secondary" href={regulaminUrl} download>Pobierz</a>
           </div>
         </li>

@@ -1,22 +1,21 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import regulaminUrl from "../../assets/docs/Regulamin_tymczasowy.pdf?url";
+import regulaminUrl from "../../assets/docs/Regulamin Aktywna Wieś Szreniawa.pdf?url";
 ---
 
 <BaseLayout title="Regulamin Igrzysk">
   <div class="container">
     <p class="breadcrumb"><a href="/">Strona główna</a> / Informacje</p>
     <h1>Regulamin Igrzysk</h1>
-    <p class="empty-state">Poniżej wersja robocza regulaminu — ostateczna wersja zostanie opublikowana po zatwierdzeniu.</p>
     <ul class="doc-list">
       <li>
         <div class="doc-row">
-          <span>Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś” (wersja robocza)</span>
+          <span>Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś”</span>
           <span class="doc-meta">
             <a class="button secondary" href={regulaminUrl} download>Pobierz</a>
           </span>
         </div>
-        <iframe class="doc-preview" src={regulaminUrl} title="Regulamin Igrzysk (wersja robocza)" loading="lazy" />
+        <iframe class="doc-preview" src={regulaminUrl} title="Regulamin Igrzysk" loading="lazy" />
       </li>
     </ul>
   </div>
