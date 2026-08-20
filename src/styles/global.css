@@ -28,7 +28,18 @@ body {
   flex-direction: column;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--color-text);
-  background: var(--color-bg);
+  /* Very faint, varied mix of folk motifs, tiled across the whole page — a
+     wycinanka łowicka flower, a simpler daisy, wheat/fir sprigs (jodełki) at
+     several sizes/angles, small leaf pairs, and scattered dot accents — a nod
+     to the KGW/rural character of the event without competing with
+     foreground content. Deliberately irregular placement/rotation/scale per
+     motif keeps a 420px tile from reading as a repeated grid. Colors are
+     baked into the SVG (data URIs can't read CSS custom properties), matched
+     to --color-forest / --color-gold. */
+  background-color: var(--color-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='420' viewBox='0 0 420 420'%3E%3Cdefs%3E%3Cg id='flower'%3E%3Cg fill='%231b3a2b' fill-opacity='0.05'%3E%3Cellipse cx='0' cy='-40' rx='15' ry='8'/%3E%3Cellipse cx='0' cy='-40' rx='15' ry='8' transform='rotate(45)'/%3E%3Cellipse cx='0' cy='-40' rx='15' ry='8' transform='rotate(90)'/%3E%3Cellipse cx='0' cy='-40' rx='15' ry='8' transform='rotate(135)'/%3E%3Cellipse cx='0' cy='-40' rx='15' ry='8' transform='rotate(180)'/%3E%3Cellipse cx='0' cy='-40' rx='15' ry='8' transform='rotate(225)'/%3E%3Cellipse cx='0' cy='-40' rx='15' ry='8' transform='rotate(270)'/%3E%3Cellipse cx='0' cy='-40' rx='15' ry='8' transform='rotate(315)'/%3E%3C/g%3E%3Cg fill='%23c9a227' fill-opacity='0.06'%3E%3Cellipse cx='0' cy='-23' rx='8' ry='12' transform='rotate(22.5)'/%3E%3Cellipse cx='0' cy='-23' rx='8' ry='12' transform='rotate(67.5)'/%3E%3Cellipse cx='0' cy='-23' rx='8' ry='12' transform='rotate(112.5)'/%3E%3Cellipse cx='0' cy='-23' rx='8' ry='12' transform='rotate(157.5)'/%3E%3Cellipse cx='0' cy='-23' rx='8' ry='12' transform='rotate(202.5)'/%3E%3Cellipse cx='0' cy='-23' rx='8' ry='12' transform='rotate(247.5)'/%3E%3Cellipse cx='0' cy='-23' rx='8' ry='12' transform='rotate(292.5)'/%3E%3Cellipse cx='0' cy='-23' rx='8' ry='12' transform='rotate(337.5)'/%3E%3C/g%3E%3Ccircle cx='0' cy='0' r='7' fill='%231b3a2b' fill-opacity='0.06'/%3E%3C/g%3E%3Cg id='daisy'%3E%3Cg fill='%23c9a227' fill-opacity='0.06'%3E%3Cellipse cx='0' cy='-24' rx='9' ry='7'/%3E%3Cellipse cx='0' cy='-24' rx='9' ry='7' transform='rotate(60)'/%3E%3Cellipse cx='0' cy='-24' rx='9' ry='7' transform='rotate(120)'/%3E%3Cellipse cx='0' cy='-24' rx='9' ry='7' transform='rotate(180)'/%3E%3Cellipse cx='0' cy='-24' rx='9' ry='7' transform='rotate(240)'/%3E%3Cellipse cx='0' cy='-24' rx='9' ry='7' transform='rotate(300)'/%3E%3C/g%3E%3Ccircle cx='0' cy='0' r='6' fill='%231b3a2b' fill-opacity='0.05'/%3E%3C/g%3E%3Cg id='sprig' fill='none' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='0' y1='0' x2='0' y2='70'/%3E%3Cline x1='0' y1='10' x2='-12' y2='1'/%3E%3Cline x1='0' y1='10' x2='12' y2='1'/%3E%3Cline x1='0' y1='24' x2='-12' y2='15'/%3E%3Cline x1='0' y1='24' x2='12' y2='15'/%3E%3Cline x1='0' y1='38' x2='-12' y2='29'/%3E%3Cline x1='0' y1='38' x2='12' y2='29'/%3E%3Cline x1='0' y1='52' x2='-12' y2='43'/%3E%3Cline x1='0' y1='52' x2='12' y2='43'/%3E%3C/g%3E%3Cg id='leaf'%3E%3Cellipse cx='-6' cy='0' rx='9' ry='4' transform='rotate(-30)'/%3E%3Cellipse cx='6' cy='0' rx='9' ry='4' transform='rotate(30)'/%3E%3C/g%3E%3C/defs%3E%3Cuse href='%23flower' transform='translate(95,125) rotate(12)'/%3E%3Cuse href='%23daisy' transform='translate(345,70) rotate(-25) scale(1.1)'/%3E%3Cuse href='%23sprig' transform='translate(250,55) rotate(8)' stroke='%231b3a2b' stroke-opacity='0.055'/%3E%3Cuse href='%23sprig' transform='translate(55,330) rotate(165) scale(0.65)' stroke='%23c9a227' stroke-opacity='0.07'/%3E%3Cuse href='%23sprig' transform='translate(375,240) rotate(-55) scale(0.8)' stroke='%231b3a2b' stroke-opacity='0.05'/%3E%3Cuse href='%23leaf' transform='translate(190,270) rotate(20)' fill='%231b3a2b' fill-opacity='0.05'/%3E%3Cuse href='%23leaf' transform='translate(280,340) rotate(-50) scale(1.2)' fill='%23c9a227' fill-opacity='0.06'/%3E%3Cuse href='%23daisy' transform='translate(120,390) rotate(40) scale(0.8)'/%3E%3Cuse href='%23flower' transform='translate(370,340) rotate(-70) scale(0.7)'/%3E%3Ccircle cx='20' cy='60' r='3' fill='%231b3a2b' fill-opacity='0.05'/%3E%3Ccircle cx='400' cy='150' r='3' fill='%23c9a227' fill-opacity='0.06'/%3E%3Ccircle cx='300' cy='400' r='3' fill='%231b3a2b' fill-opacity='0.045'/%3E%3Ccircle cx='150' cy='30' r='3' fill='%23c9a227' fill-opacity='0.06'/%3E%3Ccircle cx='30' cy='230' r='2.5' fill='%231b3a2b' fill-opacity='0.05'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 420px 420px;
   line-height: 1.55;
 }
 
@@ -61,6 +72,7 @@ a {
 }
 
 .site-header {
+  background: var(--color-bg);
   border-bottom: 1px solid var(--color-border);
 }
 
