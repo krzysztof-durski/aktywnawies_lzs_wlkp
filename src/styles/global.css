@@ -1327,11 +1327,21 @@ table.admin-table td {
 }
 
 .partners__item img {
-  max-width: 160px;
-  max-height: 90px;
+  max-width: 210px;
+  max-height: 120px;
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+.partners__item--muzeum img {
+  max-width: 320px;
+  max-height: 160px;
+}
+
+.partners__item--marszalek img {
+  max-width: 270px;
+  max-height: 140px;
 }
 
 /* Homepage all-logos strip */
@@ -1357,11 +1367,21 @@ table.admin-table td {
 }
 
 .partners-strip__item img {
-  max-width: 140px;
-  max-height: 80px;
+  max-width: 190px;
+  max-height: 110px;
   width: auto;
   height: auto;
   object-fit: contain;
+}
+
+.partners-strip__item--muzeum img {
+  max-width: 300px;
+  max-height: 150px;
+}
+
+.partners-strip__item--marszalek img {
+  max-width: 250px;
+  max-height: 130px;
 }
 
 .partners-strip p {

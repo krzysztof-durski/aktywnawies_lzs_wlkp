@@ -4,7 +4,7 @@ import { Image } from "astro:assets";
 import lzsLogo from "../assets/logo/lzs-logo-150dpi.png";
 import lzs80Lat from "../assets/logo/LOGO_80 lecia.jpg";
 
-import mon from "../assets/sponsors/orzeł_mon_logo.jpg";
+import mon from "../assets/sponsors/orzeł_mon_logo.png";
 import msit from "../assets/sponsors/MSiT Nowe.png";
 import mrirw from "../assets/sponsors/MRiRW.png";
 import marszalek from "../assets/sponsors/marszalek-wielkopolskie.png";
@@ -62,7 +62,7 @@ const partnerzy = [
   <div class="partners__grid">
     {organizatorzy.map((logo) => (
       <div class="partners__item" data-key={logo.key}>
-        <Image src={logo.src} alt={logo.alt} width={160} />
+        <Image src={logo.src} alt={logo.alt} width={210} />
       </div>
     ))}
   </div>
@@ -78,8 +78,8 @@ const partnerzy = [
   </ul>
   <div class="partners__grid">
     {honorowyPatronat.map((logo) => (
-      <div class="partners__item" data-key={logo.key}>
-        <Image src={logo.src} alt={logo.alt} width={160} />
+      <div class:list={["partners__item", { "partners__item--marszalek": logo.key === "marszalek" }]} data-key={logo.key}>
+        <Image src={logo.src} alt={logo.alt} width={logo.key === "marszalek" ? 270 : 210} />
       </div>
     ))}
   </div>
@@ -92,7 +92,7 @@ const partnerzy = [
   <div class="partners__grid">
     {patronatMedialny.map((logo) => (
       <div class="partners__item" data-key={logo.key}>
-        <Image src={logo.src} alt={logo.alt} width={160} />
+        <Image src={logo.src} alt={logo.alt} width={210} />
       </div>
     ))}
   </div>
@@ -115,8 +115,8 @@ const partnerzy = [
   </ul>
   <div class="partners__grid">
     {partnerzy.map((logo) => (
-      <div class="partners__item" data-key={logo.key}>
-        <Image src={logo.src} alt={logo.alt} width={160} />
+      <div class:list={["partners__item", { "partners__item--muzeum": logo.key === "muzeum" }]} data-key={logo.key}>
+        <Image src={logo.src} alt={logo.alt} width={logo.key === "muzeum" ? 320 : 210} />
       </div>
     ))}
   </div>

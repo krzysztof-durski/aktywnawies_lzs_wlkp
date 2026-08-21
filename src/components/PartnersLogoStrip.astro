@@ -4,7 +4,7 @@ import { Image } from "astro:assets";
 import lzsLogo from "../assets/logo/lzs-logo-150dpi.png";
 import lzs80Lat from "../assets/logo/LOGO_80 lecia.jpg";
 
-import mon from "../assets/sponsors/orzeł_mon_logo.jpg";
+import mon from "../assets/sponsors/orzeł_mon_logo.png";
 import msit from "../assets/sponsors/MSiT Nowe.png";
 import mrirw from "../assets/sponsors/MRiRW.png";
 import marszalek from "../assets/sponsors/marszalek-wielkopolskie.png";
@@ -38,8 +38,18 @@ const logos = [
   <h2>Organizatorzy, patroni i partnerzy</h2>
   <div class="partners-strip__grid">
     {logos.map((logo) => (
-      <div class="partners-strip__item">
-        <Image src={logo.src} alt={logo.alt} width={140} />
+      <div
+        class:list={[
+          "partners-strip__item",
+          { "partners-strip__item--muzeum": logo.src === muzeumSzreniawa },
+          { "partners-strip__item--marszalek": logo.src === marszalek },
+        ]}
+      >
+        <Image
+          src={logo.src}
+          alt={logo.alt}
+          width={logo.src === muzeumSzreniawa ? 300 : logo.src === marszalek ? 250 : 190}
+        />
       </div>
     ))}
   </div>
