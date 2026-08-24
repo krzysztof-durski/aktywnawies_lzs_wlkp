@@ -167,7 +167,7 @@ const csrfToken = Astro.locals.csrfToken;
       addItemRow(itemsList, dayIndex);
     });
     fieldset.querySelector("[data-remove-day]")?.addEventListener("click", () => {
-      fieldset.remove();
+      if (confirm("Usunąć cały dzień z programu?")) fieldset.remove();
     });
     fieldset.querySelectorAll("[data-remove-item]").forEach((btn) => {
       btn.addEventListener("click", () => btn.closest(".program-item-row")?.remove());
