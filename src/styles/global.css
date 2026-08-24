@@ -929,6 +929,48 @@ form.stacked textarea {
   font-family: ui-monospace, monospace;
 }
 
+form.program-form {
+  max-width: 720px;
+}
+
+.program-day-field {
+  display: grid;
+  gap: 0.85rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.program-day-field legend {
+  font-weight: 700;
+  padding: 0 0.35rem;
+}
+
+.program-items-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.program-item-row {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.program-item-row input {
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  font: inherit;
+}
+
+button.danger-outline {
+  background: transparent;
+  color: #a33a3a;
+  border: 1px solid #a33a3a;
+}
+
 /* Rich text editor (Opis/Treść HTML fields) — contenteditable + hidden textarea kept in sync */
 
 .rte {
@@ -1026,6 +1068,23 @@ button.danger {
   color: #8a2c2c;
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
+}
+
+.form-success {
+  background: #eaf7ee;
+  border: 1px solid #a5d9b5;
+  color: #256a3c;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+}
+
+.admin-main .doc-preview {
+  width: 100%;
+  height: 75vh;
+  max-height: 800px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-top: 1rem;
 }
 
 .admin-shell {

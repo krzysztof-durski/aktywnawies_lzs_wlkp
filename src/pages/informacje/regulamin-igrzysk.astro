@@ -1,6 +1,13 @@
 ---
+const { env } = Astro.locals.runtime;
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import regulaminUrl from "../../assets/docs/Regulamin Aktywna Wieś Szreniawa.pdf?url";
+import { getSiteSetting } from "../../lib/db";
+import { mediaUrl } from "../../lib/media";
+import fallbackRegulaminUrl from "../../assets/docs/Regulamin Aktywna Wieś Szreniawa.pdf?url";
+
+const title = (await getSiteSetting(env.DB, "regulamin_glowny_title")) || "Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś”";
+const key = await getSiteSetting(env.DB, "regulamin_glowny_key");
+const regulaminUrl = key ? mediaUrl(env.MEDIA_BASE_URL, key) : fallbackRegulaminUrl;
 ---
 
 <BaseLayout title="Regulamin Igrzysk">
@@ -10,7 +17,7 @@ import regulaminUrl from "../../assets/docs/Regulamin Aktywna Wieś Szreniawa.pd
     <ul class="doc-list">
       <li>
         <div class="doc-row">
-          <span>Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś”</span>
+          <span>{title}</span>
           <span class="doc-meta">
             <a class="button secondary" href={regulaminUrl} download>Pobierz</a>
           </span>

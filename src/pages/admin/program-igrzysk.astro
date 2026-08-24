@@ -1,0 +1,192 @@
+---
+const { env } = Astro.locals.runtime;
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getSiteSetting } from "../../lib/db";
+
+interface ProgramItem {
+  time: string;
+  text: string;
+}
+interface ProgramDay {
+  date: string;
+  label: string;
+  items: ProgramItem[];
+}
+interface ProgramData {
+  term: string;
+  note: string;
+  days: ProgramDay[];
+}
+
+const DEFAULT_PROGRAM: ProgramData = {
+  term: "18–20.09.2026 r.",
+  note: "Ramowy program – projekt",
+  days: [
+    {
+      date: "18.09.2026",
+      label: "Piątek",
+      items: [
+        { time: "Do 16:00", text: "Przyjazd uczestników" },
+        { time: "20:00", text: "Oficjalne otwarcie Igrzysk" },
+      ],
+    },
+    {
+      date: "19.09.2026",
+      label: "Sobota",
+      items: [
+        { time: "9:30–14:00", text: "Konkurencje sportowe" },
+        { time: "15:00–18:00", text: "Kulinarna Bitwa Regionów" },
+        { time: "18:30", text: "Podsumowanie Igrzysk" },
+      ],
+    },
+    {
+      date: "20.09.2026",
+      label: "Niedziela",
+      items: [
+        { time: "9:00", text: "Zwiedzanie Muzeum Narodowego Rolnictwa i Przemysłu Rolno-Spożywczego w Szreniawie" },
+        { time: "13:00", text: "Wyjazd uczestników" },
+      ],
+    },
+  ],
+};
+
+const storedJson = await getSiteSetting(env.DB, "program_igrzysk_json");
+let program: ProgramData = DEFAULT_PROGRAM;
+if (storedJson) {
+  try {
+    program = JSON.parse(storedJson);
+  } catch {
+    program = DEFAULT_PROGRAM;
+  }
+}
+
+const errorParam = Astro.url.searchParams.get("error");
+const errorMessage = errorParam === "1" ? "Termin i przynajmniej jeden dzień są wymagane." : null;
+const saved = Astro.url.searchParams.get("saved") === "1";
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Program Igrzysk">
+  <h1>Program Igrzysk</h1>
+  <p class="doc-meta">Widoczne na stronie <a href="/informacje/program-igrzysk" target="_blank">Program Igrzysk</a>.</p>
+  {saved && <p class="form-success">Zapisano.</p>}
+  {errorMessage && <p class="form-error">{errorMessage}</p>}
+
+  <form class="stacked program-form" method="POST" action={`/api/admin/program-igrzysk?csrf_token=${csrfToken}`}>
+    <label>
+      Termin Igrzysk
+      <input type="text" name="term" required value={program.term} />
+    </label>
+    <label>
+      Uwaga (opcjonalnie)
+      <input type="text" name="note" value={program.note} />
+    </label>
+
+    <div id="days-list">
+      {program.days.map((day, dayIndex) => (
+        <fieldset class="program-day-field" data-day-index={dayIndex}>
+          <legend>Dzień {dayIndex + 1}</legend>
+          <label>
+            Data
+            <input type="text" name={`days[${dayIndex}][date]`} required value={day.date} placeholder="18.09.2026" />
+          </label>
+          <label>
+            Nazwa dnia
+            <input type="text" name={`days[${dayIndex}][label]`} required value={day.label} placeholder="Piątek" />
+          </label>
+          <div class="program-items-list">
+            {day.items.map((item, itemIndex) => (
+              <div class="program-item-row" data-item-index={itemIndex}>
+                <input type="text" name={`days[${dayIndex}][items][${itemIndex}][time]`} required value={item.time} placeholder="20:00" />
+                <input type="text" name={`days[${dayIndex}][items][${itemIndex}][text]`} required value={item.text} placeholder="Opis punktu programu" />
+                <button type="button" class="secondary danger-outline" data-remove-item>Usuń</button>
+              </div>
+            ))}
+          </div>
+          <button type="button" class="secondary" data-add-item>+ Punkt programu</button>
+          <button type="button" class="danger" data-remove-day>Usuń cały dzień</button>
+        </fieldset>
+      ))}
+    </div>
+
+    <button type="button" class="secondary" id="add-day">+ Dzień</button>
+    <button type="submit">Zapisz</button>
+  </form>
+</AdminLayout>
+
+<template id="day-template">
+  <fieldset class="program-day-field">
+    <legend>Nowy dzień</legend>
+    <label>
+      Data
+      <input type="text" data-field="date" required placeholder="18.09.2026" />
+    </label>
+    <label>
+      Nazwa dnia
+      <input type="text" data-field="label" required placeholder="Piątek" />
+    </label>
+    <div class="program-items-list"></div>
+    <button type="button" class="secondary" data-add-item>+ Punkt programu</button>
+    <button type="button" class="danger" data-remove-day>Usuń cały dzień</button>
+  </fieldset>
+</template>
+
+<template id="item-template">
+  <div class="program-item-row">
+    <input type="text" data-field="time" required placeholder="20:00" />
+    <input type="text" data-field="text" required placeholder="Opis punktu programu" />
+    <button type="button" class="secondary danger-outline" data-remove-item>Usuń</button>
+  </div>
+</template>
+
+<script>
+  const daysList = document.getElementById("days-list")!;
+  const dayTemplate = document.getElementById("day-template") as HTMLTemplateElement;
+  const itemTemplate = document.getElementById("item-template") as HTMLTemplateElement;
+
+  // Every new day/item gets a unique, ever-increasing index for its input names —
+  // gaps left by deletions are harmless since the server groups by index and then
+  // sorts, so indices never need to be renumbered back to a contiguous 0..n-1 run.
+  let nextDayIndex = daysList.querySelectorAll(".program-day-field").length;
+
+  function addItemRow(itemsList: HTMLElement, dayIndex: number) {
+    const row = itemTemplate.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    const itemIndex = itemsList.querySelectorAll(".program-item-row").length
+      ? Math.max(...Array.from(itemsList.querySelectorAll<HTMLElement>(".program-item-row")).map((r) => Number(r.dataset.itemIndex ?? 0))) + 1
+      : 0;
+    row.dataset.itemIndex = String(itemIndex);
+    row.querySelectorAll<HTMLInputElement>("input[data-field]").forEach((input) => {
+      input.name = `days[${dayIndex}][items][${itemIndex}][${input.dataset.field}]`;
+    });
+    itemsList.appendChild(row);
+  }
+
+  function wireDay(fieldset: HTMLElement, dayIndex: number) {
+    fieldset.querySelector("[data-add-item]")?.addEventListener("click", () => {
+      const itemsList = fieldset.querySelector(".program-items-list") as HTMLElement;
+      addItemRow(itemsList, dayIndex);
+    });
+    fieldset.querySelector("[data-remove-day]")?.addEventListener("click", () => {
+      fieldset.remove();
+    });
+    fieldset.querySelectorAll("[data-remove-item]").forEach((btn) => {
+      btn.addEventListener("click", () => btn.closest(".program-item-row")?.remove());
+    });
+  }
+
+  // Wire up rows already rendered server-side.
+  daysList.querySelectorAll<HTMLElement>(".program-day-field").forEach((fieldset) => {
+    wireDay(fieldset, Number(fieldset.dataset.dayIndex));
+  });
+
+  document.getElementById("add-day")?.addEventListener("click", () => {
+    const dayIndex = nextDayIndex++;
+    const fieldset = dayTemplate.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    fieldset.dataset.dayIndex = String(dayIndex);
+    fieldset.querySelectorAll<HTMLInputElement>("label input[data-field]").forEach((input) => {
+      input.name = `days[${dayIndex}][${input.dataset.field}]`;
+    });
+    daysList.appendChild(fieldset);
+    wireDay(fieldset, dayIndex);
+  });
+</script>

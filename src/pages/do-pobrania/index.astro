@@ -2,10 +2,15 @@
 const { env } = Astro.locals.runtime;
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import DocumentList from "../../components/DocumentList.astro";
-import { listAllPublishedDocuments, type DocumentRow } from "../../lib/db";
-import regulaminUrl from "../../assets/docs/Regulamin Aktywna Wieś Szreniawa.pdf?url";
+import { listAllPublishedDocuments, getSiteSetting, type DocumentRow } from "../../lib/db";
+import { mediaUrl } from "../../lib/media";
+import fallbackRegulaminUrl from "../../assets/docs/Regulamin Aktywna Wieś Szreniawa.pdf?url";
 
 const { results: documents } = await listAllPublishedDocuments(env.DB);
+
+const regulaminTitle = (await getSiteSetting(env.DB, "regulamin_glowny_title")) || "Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś”";
+const regulaminKey = await getSiteSetting(env.DB, "regulamin_glowny_key");
+const regulaminUrl = regulaminKey ? mediaUrl(env.MEDIA_BASE_URL, regulaminKey) : fallbackRegulaminUrl;
 
 const grouped = documents.reduce<Record<string, DocumentRow[]>>((acc, doc) => {
   (acc[doc.category] ??= []).push(doc);
@@ -23,7 +28,7 @@ const categories = Object.keys(grouped).sort();
       <ul class="doc-list">
         <li>
           <div class="doc-row">
-            <span>Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś”</span>
+            <span>{regulaminTitle}</span>
             <a class="button secondary" href={regulaminUrl} download>Pobierz</a>
           </div>
         </li>

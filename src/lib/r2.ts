@@ -77,6 +77,10 @@ export function buildDisciplinePdfKey(field: "regulamin" | "listy-startowe" | "w
   return `disciplines/${field}/${shortHash()}.pdf`;
 }
 
+export function buildRegulaminGlownyKey(): string {
+  return `documents/regulamin-glowny/${shortHash()}.pdf`;
+}
+
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
 export async function putObject(

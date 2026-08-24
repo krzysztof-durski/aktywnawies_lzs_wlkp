@@ -720,6 +720,13 @@ export async function getSiteOfflineMessage(db: D1Database): Promise<string> {
   return row?.value ?? "Strona jest tymczasowo niedostępna.";
 }
 
+export async function getSiteSetting(db: D1Database, key: string): Promise<string | null> {
+  const row = await db.prepare("SELECT value FROM site_settings WHERE key = ?1").bind(key).first<{
+    value: string;
+  }>();
+  return row?.value ?? null;
+}
+
 export function setSiteSetting(db: D1Database, key: string, value: string) {
   return db
     .prepare("INSERT INTO site_settings (key, value) VALUES (?1, ?2) ON CONFLICT(key) DO UPDATE SET value = excluded.value")

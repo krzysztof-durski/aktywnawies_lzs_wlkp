@@ -11,8 +11,23 @@ import {
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 // TODO: narrow img-src/connect-src to the real R2 media custom domain once it's provisioned.
-const SECURITY_HEADERS: Record<string, string> = {
-  "Content-Security-Policy": [
+const BASE_SECURITY_HEADERS: Record<string, string> = {
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+};
+
+/**
+ * `frame-ancestors` governs whether *this response itself* may be loaded inside an
+ * iframe — the opposite direction from `frame-src`. Every PDF preview on the site
+ * (Regulamin Igrzysk, DocumentList, the admin regulamin editor) embeds a same-origin
+ * `/media/[...key]` object in an <iframe>, so that route needs `'self'` or the
+ * browser blocks its own embedding; everything else stays locked to `'none'`.
+ */
+function buildCsp(pathname: string): string {
+  const frameAncestors = pathname.startsWith("/media/") ? "frame-ancestors 'self'" : "frame-ancestors 'none'";
+  return [
     "default-src 'self'",
     // The hash allows Turnstile's inline bootstrap script under a strict CSP (no 'unsafe-inline').
     // If Cloudflare changes api.js, the browser console will report the new hash to swap in.
@@ -25,17 +40,14 @@ const SECURITY_HEADERS: Record<string, string> = {
     "connect-src 'self' https://challenges.cloudflare.com",
     "img-src 'self' https: data:",
     "style-src 'self' 'unsafe-inline'",
-    "frame-ancestors 'none'",
+    frameAncestors,
     "base-uri 'self'",
-  ].join("; "),
-  "X-Content-Type-Options": "nosniff",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
-};
+  ].join("; ");
+}
 
-function withSecurityHeaders(response: Response): Response {
-  for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+function withSecurityHeaders(response: Response, pathname: string): Response {
+  response.headers.set("Content-Security-Policy", buildCsp(pathname));
+  for (const [name, value] of Object.entries(BASE_SECURITY_HEADERS)) {
     response.headers.set(name, value);
   }
   return response;
@@ -78,6 +90,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const message = await getSiteOfflineMessage(env.DB);
       return withSecurityHeaders(
         new Response(offlineHtml(message), { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } }),
+        pathname,
       );
     }
 
@@ -86,7 +99,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       const session = token ? await getValidSessionByTokenHash(env.DB, await hashSessionToken(token)) : null;
 
       if (!session) {
-        if (isAdminApi) return withSecurityHeaders(new Response("Unauthorized", { status: 401 }));
+        if (isAdminApi) return withSecurityHeaders(new Response("Unauthorized", { status: 401 }), pathname);
         return context.redirect("/admin/login");
       }
 
@@ -99,7 +112,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         const csrfCookie = context.cookies.get(CSRF_COOKIE_NAME)?.value;
         const csrfParam = url.searchParams.get("csrf_token");
         if (!csrfCookie || !csrfParam || csrfCookie !== csrfParam) {
-          return withSecurityHeaders(new Response("Invalid CSRF token", { status: 403 }));
+          return withSecurityHeaders(new Response("Invalid CSRF token", { status: 403 }), pathname);
         }
       }
 
@@ -119,13 +132,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
 
     const response = await next();
-    return withSecurityHeaders(response);
+    return withSecurityHeaders(response, pathname);
   } catch (err) {
     // Logged for `wrangler tail`/Workers Logs visibility; never surfaced to the client —
     // an unhandled exception's message/stack could leak internal details (query text, keys).
     console.error("Unhandled error:", err);
     return withSecurityHeaders(
       new Response(FRIENDLY_500_HTML, { status: 500, headers: { "Content-Type": "text/html; charset=utf-8" } }),
+      pathname,
     );
   }
 });

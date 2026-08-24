@@ -1,0 +1,54 @@
+---
+const { env } = Astro.locals.runtime;
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { getSiteSetting } from "../../lib/db";
+import { mediaUrl } from "../../lib/media";
+
+const currentTitle = (await getSiteSetting(env.DB, "regulamin_glowny_title")) || "Regulamin V Ogólnopolskich Igrzysk LZS „Aktywna Wieś”";
+const currentKey = await getSiteSetting(env.DB, "regulamin_glowny_key");
+const currentSize = await getSiteSetting(env.DB, "regulamin_glowny_size");
+
+const errorParam = Astro.url.searchParams.get("error");
+const ERROR_MESSAGES: Record<string, string> = {
+  missing: "Tytuł jest wymagany.",
+  too_large: "Plik jest za duży (limit 20MB).",
+  not_pdf: "Plik nie wygląda na prawidłowy PDF.",
+};
+const errorMessage = errorParam ? ERROR_MESSAGES[errorParam] ?? "Wystąpił błąd." : null;
+const saved = Astro.url.searchParams.get("saved") === "1";
+const csrfToken = Astro.locals.csrfToken;
+---
+
+<AdminLayout title="Regulamin Igrzysk">
+  <h1>Regulamin Igrzysk</h1>
+  <p class="doc-meta">
+    Ten plik jest wyświetlany na stronie <a href="/informacje/regulamin-igrzysk" target="_blank">Regulamin Igrzysk</a>
+    oraz w sekcji „Do pobrania”.
+  </p>
+  {saved && <p class="form-success">Zapisano.</p>}
+  {errorMessage && <p class="form-error">{errorMessage}</p>}
+
+  <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/regulamin?csrf_token=${csrfToken}`}>
+    <label>
+      Tytuł dokumentu
+      <input type="text" name="title" required value={currentTitle} />
+    </label>
+    <label>
+      Zastąp plik PDF {currentKey ? "(opcjonalnie)" : ""}
+      <input type="file" name="file" accept="application/pdf" required={!currentKey} />
+    </label>
+    {currentKey ? (
+      <p class="doc-meta">
+        Obecny plik: <code>{currentKey.split("/").pop()}</code>
+        {currentSize && ` (${Math.round(Number(currentSize) / 1024)} KB)`}. Zostaw puste, aby zachować obecny plik.
+      </p>
+    ) : (
+      <p class="doc-meta">Nie wgrano jeszcze żadnego pliku — strona pokazuje tymczasowy plik domyślny.</p>
+    )}
+    <button type="submit">Zapisz</button>
+  </form>
+
+  {currentKey && (
+    <iframe class="doc-preview" src={mediaUrl(env.MEDIA_BASE_URL, currentKey)} title="Podgląd regulaminu" loading="lazy" />
+  )}
+</AdminLayout>

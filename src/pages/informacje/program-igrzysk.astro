@@ -1,44 +1,76 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getSiteSetting } from "../../lib/db";
 
-const days = [
-  {
-    date: "18.09.2026",
-    label: "Piątek",
-    items: [
-      { time: "Do 16:00", text: "Przyjazd uczestników" },
-      { time: "20:00", text: "Oficjalne otwarcie Igrzysk" },
-    ],
-  },
-  {
-    date: "19.09.2026",
-    label: "Sobota",
-    items: [
-      { time: "9:30–14:00", text: "Konkurencje sportowe" },
-      { time: "15:00–18:00", text: "Kulinarna Bitwa Regionów" },
-      { time: "18:30", text: "Podsumowanie Igrzysk" },
-    ],
-  },
-  {
-    date: "20.09.2026",
-    label: "Niedziela",
-    items: [
-      { time: "9:00", text: "Zwiedzanie Muzeum Narodowego Rolnictwa i Przemysłu Rolno-Spożywczego w Szreniawie" },
-      { time: "13:00", text: "Wyjazd uczestników" },
-    ],
-  },
-];
+const { env } = Astro.locals.runtime;
+
+interface ProgramItem {
+  time: string;
+  text: string;
+}
+interface ProgramDay {
+  date: string;
+  label: string;
+  items: ProgramItem[];
+}
+interface ProgramData {
+  term: string;
+  note: string;
+  days: ProgramDay[];
+}
+
+const DEFAULT_PROGRAM: ProgramData = {
+  term: "18–20.09.2026 r.",
+  note: "Ramowy program – projekt",
+  days: [
+    {
+      date: "18.09.2026",
+      label: "Piątek",
+      items: [
+        { time: "Do 16:00", text: "Przyjazd uczestników" },
+        { time: "20:00", text: "Oficjalne otwarcie Igrzysk" },
+      ],
+    },
+    {
+      date: "19.09.2026",
+      label: "Sobota",
+      items: [
+        { time: "9:30–14:00", text: "Konkurencje sportowe" },
+        { time: "15:00–18:00", text: "Kulinarna Bitwa Regionów" },
+        { time: "18:30", text: "Podsumowanie Igrzysk" },
+      ],
+    },
+    {
+      date: "20.09.2026",
+      label: "Niedziela",
+      items: [
+        { time: "9:00", text: "Zwiedzanie Muzeum Narodowego Rolnictwa i Przemysłu Rolno-Spożywczego w Szreniawie" },
+        { time: "13:00", text: "Wyjazd uczestników" },
+      ],
+    },
+  ],
+};
+
+const storedJson = await getSiteSetting(env.DB, "program_igrzysk_json");
+let program: ProgramData = DEFAULT_PROGRAM;
+if (storedJson) {
+  try {
+    program = JSON.parse(storedJson);
+  } catch {
+    program = DEFAULT_PROGRAM;
+  }
+}
 ---
 
 <BaseLayout title="Program Igrzysk">
   <div class="container">
     <p class="breadcrumb"><a href="/">Strona główna</a> / Informacje</p>
     <h1>Program Igrzysk</h1>
-    <p class="program-term">Termin Igrzysk: <strong>18–20.09.2026 r.</strong></p>
-    <p class="program-note">Ramowy program – projekt</p>
+    <p class="program-term">Termin Igrzysk: <strong>{program.term}</strong></p>
+    {program.note && <p class="program-note">{program.note}</p>}
 
     <div class="program-schedule">
-      {days.map((day) => (
+      {program.days.map((day) => (
         <section class="program-day">
           <div class="program-day__heading">
             <span class="program-day__date">{day.date}</span>
