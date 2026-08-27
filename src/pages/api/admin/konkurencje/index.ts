@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { createDiscipline, type DisciplineInput } from "../../../../lib/db";
+import { createDiscipline, getNextDisciplineSortOrder, type DisciplineInput } from "../../../../lib/db";
 import { slugify } from "../../../../lib/slugify";
 import {
   buildDisciplineCoverKey,
@@ -20,7 +20,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const form = await request.formData();
   const title = String(form.get("title") ?? "").trim();
   const slugInput = String(form.get("slug") ?? "").trim();
-  const sortOrder = Number(form.get("sort_order") ?? 0) || 0;
   const section = String(form.get("section") ?? "").trim() || null;
 
   if (!title) {
@@ -76,6 +75,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
   if (wyniki.key) uploadedKeys.push(wyniki.key);
+
+  const sortOrder = await getNextDisciplineSortOrder(env.DB);
 
   const input: DisciplineInput = {
     slug: slugify(slugInput || title),

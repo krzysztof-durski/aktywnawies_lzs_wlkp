@@ -531,6 +531,12 @@ export function listAllDisciplinesAdmin(db: D1Database) {
     .all<Discipline>();
 }
 
+/** Next sort_order for a newly created discipline, so it lands last in the listing by default. */
+export async function getNextDisciplineSortOrder(db: D1Database): Promise<number> {
+  const row = await db.prepare("SELECT MAX(sort_order) AS maxOrder FROM disciplines").first<{ maxOrder: number | null }>();
+  return (row?.maxOrder ?? -1) + 1;
+}
+
 export function getDisciplineById(db: D1Database, id: number) {
   return db.prepare("SELECT * FROM disciplines WHERE id = ?1").bind(id).first<Discipline>();
 }

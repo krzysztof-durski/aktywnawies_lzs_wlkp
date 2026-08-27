@@ -59,10 +59,7 @@ const csrfToken = Astro.locals.csrfToken;
       Wyniki (PDF, opcjonalnie)
       <input type="file" name="wyniki" accept="application/pdf" />
     </label>
-    <label>
-      Kolejność
-      <input type="number" name="sort_order" value="0" />
-    </label>
+    <p class="doc-meta">Nowa konkurencja trafia na koniec listy — kolejność można zmienić później w edycji.</p>
     <button type="submit">Zapisz</button>
     <a class="button secondary" href="/admin/konkurencje">Anuluj</a>
   </form>
