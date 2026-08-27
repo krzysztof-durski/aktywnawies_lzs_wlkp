@@ -28,20 +28,23 @@ function formatSize(bytes: number | null): string {
           <span class="doc-meta">
             {formatSize(doc.file_size)}
             {" "}
+            {doc.mime_type === "application/pdf" && (
+              <button type="button" class="button secondary" data-preview-toggle>Podgląd</button>
+            )}
+            {" "}
             <a class="button secondary" href={mediaUrl(mediaBaseUrl, doc.file_key)} download>
               Pobierz
             </a>
           </span>
         </div>
         {doc.mime_type === "application/pdf" && (
-          <iframe
-            class="doc-preview"
-            src={mediaUrl(mediaBaseUrl, doc.file_key)}
-            title={doc.title}
-            loading="lazy"
-          />
+          <div class="doc-preview-wrap" hidden>
+            <iframe class="doc-preview" data-src={mediaUrl(mediaBaseUrl, doc.file_key)} title={doc.title} loading="lazy" />
+          </div>
         )}
       </li>
     ))}
   </ul>
 )}
+
+<script src="../scripts/doc-preview-toggle.ts"></script>

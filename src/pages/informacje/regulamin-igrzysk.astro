@@ -19,11 +19,17 @@ const regulaminUrl = key ? mediaUrl(env.MEDIA_BASE_URL, key) : fallbackRegulamin
         <div class="doc-row">
           <span>{title}</span>
           <span class="doc-meta">
+            <button type="button" class="button secondary" data-preview-toggle>Podgląd</button>
+            {" "}
             <a class="button secondary" href={regulaminUrl} download>Pobierz</a>
           </span>
         </div>
-        <iframe class="doc-preview" src={regulaminUrl} title="Regulamin Igrzysk" loading="lazy" />
+        <div class="doc-preview-wrap" hidden>
+          <iframe class="doc-preview" data-src={regulaminUrl} title="Regulamin Igrzysk" loading="lazy" />
+        </div>
       </li>
     </ul>
   </div>
 </BaseLayout>
+
+<script src="../../scripts/doc-preview-toggle.ts"></script>

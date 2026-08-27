@@ -29,7 +29,14 @@ const categories = Object.keys(grouped).sort();
         <li>
           <div class="doc-row">
             <span>{regulaminTitle}</span>
-            <a class="button secondary" href={regulaminUrl} download>Pobierz</a>
+            <span class="doc-meta">
+              <button type="button" class="button secondary" data-preview-toggle>Podgląd</button>
+              {" "}
+              <a class="button secondary" href={regulaminUrl} download>Pobierz</a>
+            </span>
+          </div>
+          <div class="doc-preview-wrap" hidden>
+            <iframe class="doc-preview" data-src={regulaminUrl} title={regulaminTitle} loading="lazy" />
           </div>
         </li>
       </ul>
@@ -51,3 +58,5 @@ const categories = Object.keys(grouped).sort();
     )}
   </div>
 </BaseLayout>
+
+<script src="../../scripts/doc-preview-toggle.ts"></script>
