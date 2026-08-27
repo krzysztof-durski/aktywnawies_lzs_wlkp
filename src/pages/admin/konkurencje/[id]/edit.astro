@@ -68,7 +68,7 @@ const csrfToken = Astro.locals.csrfToken;
       </div>
     )}
     <label>
-      {discipline.cover_image_key ? "Zamień zdjęcie" : "Zdjęcie w nagłówku strony dyscypliny (opcjonalnie)"}
+      {discipline.cover_image_key ? "Zamień zdjęcie (JPEG/PNG/WebP, max 10MB)" : "Zdjęcie w nagłówku strony dyscypliny (opcjonalnie, JPEG/PNG/WebP, max 10MB)"}
       <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp" />
     </label>
     <p><strong>Regulamin</strong> — dodaj plik PDF, napisz tekst poniżej, albo jedno i drugie.</p>

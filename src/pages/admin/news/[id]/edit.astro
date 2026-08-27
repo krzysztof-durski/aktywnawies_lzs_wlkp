@@ -52,7 +52,7 @@ const csrfToken = Astro.locals.csrfToken;
       </div>
     )}
     <label>
-      {post.cover_image_key ? "Zamień zdjęcie okładkowe" : "Zdjęcie okładkowe (opcjonalnie)"}
+      {post.cover_image_key ? "Zamień zdjęcie okładkowe (JPEG/PNG/WebP, max 10MB)" : "Zdjęcie okładkowe (opcjonalnie, JPEG/PNG/WebP, max 10MB)"}
       <input type="file" name="cover_image" accept="image/jpeg,image/png,image/webp" />
     </label>
     <label>

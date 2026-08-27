@@ -38,7 +38,7 @@ const csrfToken = Astro.locals.csrfToken;
   <form class="stacked" method="POST" enctype="multipart/form-data" action={`/api/admin/gallery/images?csrf_token=${csrfToken}`}>
     <input type="hidden" name="album_id" value={id} />
     <label>
-      Pliki (JPEG, PNG, WebP)
+      Pliki (JPEG, PNG, WebP, max 10MB każdy)
       <input type="file" name="files" accept="image/jpeg,image/png,image/webp" multiple required />
     </label>
     <button type="submit">Prześlij</button>
