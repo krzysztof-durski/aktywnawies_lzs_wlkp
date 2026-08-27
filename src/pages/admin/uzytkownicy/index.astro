@@ -2,13 +2,14 @@
 const { env } = Astro.locals.runtime;
 import AdminLayout from "../../../layouts/AdminLayout.astro";
 import { listAdminUsers } from "../../../lib/db";
+import { PASSWORD_REQUIREMENTS_LABEL } from "../../../lib/auth";
 
 const { results: users } = await listAdminUsers(env.DB);
 
 const saved = Astro.url.searchParams.get("saved");
 const errorParam = Astro.url.searchParams.get("error");
 const ERROR_MESSAGES: Record<string, string> = {
-  invalid: "Login jest wymagany, a hasło musi mieć co najmniej 12 znaków.",
+  invalid: `Login jest wymagany, a hasło musi spełniać wymagania: ${PASSWORD_REQUIREMENTS_LABEL}.`,
   mismatch: "Hasła nie są takie same.",
   taken: "Ten login jest już zajęty.",
   self: "Nie możesz wyłączyć własnego konta.",
@@ -30,8 +31,15 @@ const currentAdminId = Astro.locals.admin?.id;
       <input type="text" name="username" required />
     </label>
     <label>
-      Hasło (min. 12 znaków)
-      <input type="password" name="password" required minlength="12" />
+      Hasło ({PASSWORD_REQUIREMENTS_LABEL})
+      <input
+        type="password"
+        name="password"
+        required
+        minlength="12"
+        pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&amp;*()_+\-=\[\]{};':&quot;\\|,.&lt;&gt;/?~`])(?=(?:.*[0-9]){4,}).{12,}"
+        title={`Hasło musi spełniać wymagania: ${PASSWORD_REQUIREMENTS_LABEL}.`}
+      />
     </label>
     <label>
       Powtórz hasło

@@ -18,6 +18,27 @@ function bytesToBase64Url(bytes: Uint8Array): string {
   return bytesToBase64(bytes).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
+const MIN_PASSWORD_LENGTH = 12;
+const MIN_DIGITS = 4;
+// Deliberately excludes quotes/backslash — those are common sources of shell/SQL
+// escaping mistakes (create-admin.ts prints raw SQL) without meaningfully
+// widening the character set an attacker could use.
+const SPECIAL_CHAR_RE = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/;
+
+export const PASSWORD_REQUIREMENTS_LABEL =
+  "min. 12 znaków, wielka i mała litera, znak specjalny i co najmniej 4 cyfry";
+
+/** Enforced everywhere a password is set: the admin panel, its API, and scripts/create-admin.ts. */
+export function isPasswordStrongEnough(password: string): boolean {
+  if (password.length < MIN_PASSWORD_LENGTH) return false;
+  if (!/[a-z]/.test(password)) return false;
+  if (!/[A-Z]/.test(password)) return false;
+  if (!SPECIAL_CHAR_RE.test(password)) return false;
+  const digitCount = (password.match(/[0-9]/g) ?? []).length;
+  if (digitCount < MIN_DIGITS) return false;
+  return true;
+}
+
 export interface PasswordHash {
   hash: string;
   salt: string;

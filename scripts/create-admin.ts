@@ -12,7 +12,7 @@
 
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import { hashPassword } from "../src/lib/auth";
+import { hashPassword, isPasswordStrongEnough, PASSWORD_REQUIREMENTS_LABEL } from "../src/lib/auth";
 
 function sqlEscape(value: string): string {
   return value.replace(/'/g, "''");
@@ -26,7 +26,7 @@ async function main() {
   }
 
   const rl = createInterface({ input: stdin, output: stdout });
-  const password = await rl.question("Password for new admin (min 12 chars, visible as typed): ");
+  const password = await rl.question(`Password for new admin (${PASSWORD_REQUIREMENTS_LABEL}, visible as typed): `);
   const confirm = await rl.question("Confirm password: ");
   rl.close();
 
@@ -34,8 +34,8 @@ async function main() {
     console.error("Passwords did not match.");
     process.exit(1);
   }
-  if (password.length < 12) {
-    console.error("Password should be at least 12 characters.");
+  if (!isPasswordStrongEnough(password)) {
+    console.error(`Password does not meet requirements: ${PASSWORD_REQUIREMENTS_LABEL}.`);
     process.exit(1);
   }
 

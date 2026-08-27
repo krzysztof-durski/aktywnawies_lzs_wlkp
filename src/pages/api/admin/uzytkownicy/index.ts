@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { createAdminUser, getAdminUserByUsername } from "../../../../lib/db";
-import { hashPassword } from "../../../../lib/auth";
+import { hashPassword, isPasswordStrongEnough } from "../../../../lib/auth";
 import { audit } from "../../../../lib/audit";
 
 export const prerender = false;
@@ -15,7 +15,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const password = String(form.get("password") ?? "");
   const confirmPassword = String(form.get("confirm_password") ?? "");
 
-  if (!username || password.length < 12) {
+  if (!username || !isPasswordStrongEnough(password)) {
     return new Response(null, { status: 303, headers: { Location: "/admin/uzytkownicy?error=invalid" } });
   }
   if (password !== confirmPassword) {
