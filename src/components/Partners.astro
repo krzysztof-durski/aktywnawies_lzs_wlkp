@@ -7,15 +7,20 @@ import lzs80Lat from "../assets/logo/LOGO_80 lecia.jpg";
 import mon from "../assets/sponsors/orzeł_mon_logo.png";
 import msit from "../assets/sponsors/MSiT Nowe.png";
 import mrirw from "../assets/sponsors/MRiRW.png";
+import arimr from "../assets/sponsors/ARiMR_logo_PODSTAWOWE.jpg";
 import marszalek from "../assets/sponsors/marszalek-wielkopolskie.png";
 import starostaPoznanski from "../assets/sponsors/powiat-poznanski-jan-grabowski-starosta-poznanski.png";
 import radioPoznan from "../assets/sponsors/radio-poznan.png";
 
 import gminaSteszew from "../assets/sponsors/Gmina Stęszew.png";
 import gminaKomorniki from "../assets/sponsors/herb_Komorniki (1).jpg";
+import kowr from "../assets/sponsors/logo_KOWR_skrot.png";
+import mielczarek from "../assets/sponsors/Zakłady Mięsne Mielczarek.jpg";
+import krus from "../assets/sponsors/Logo_KRUS_kontra-1.png";
 import powiatPoznanski from "../assets/sponsors/herb powiat poznański.jpg";
 import muzeumSzreniawa from "../assets/sponsors/logo_muzeum_h125.png";
 import tvp3 from "../assets/sponsors/TVP3_Poznan_podst-1.png";
+import instytutWitosa from "../assets/sponsors/Instytut Witosa.png";
 
 // `key` links a logo to its matching written-list entry (in this section or
 // another) so hovering either one can highlight both — omitted where a logo
@@ -29,6 +34,7 @@ const honorowyPatronat = [
   { src: mon, alt: "Ministerstwo Obrony Narodowej", key: "mon" },
   { src: msit, alt: "Ministerstwo Sportu i Turystyki", key: "msit" },
   { src: mrirw, alt: "Ministerstwo Rolnictwa i Rozwoju Wsi", key: "mrirw" },
+  { src: arimr, alt: "Agencja Restrukturyzacji i Modernizacji Rolnictwa", key: "arimr" },
   { src: marszalek, alt: "Marszałek Województwa Wielkopolskiego", key: "marszalek" },
   { src: starostaPoznanski, alt: "Starosta Poznański", key: "starosta" },
 ];
@@ -46,8 +52,12 @@ const patronatMedialny = [
 const partnerzy = [
   { src: gminaSteszew, alt: "Gmina Stęszew", key: "gmina-steszew" },
   { src: gminaKomorniki, alt: "Gmina Komorniki", key: "gmina-komorniki" },
+  { src: kowr, alt: "Krajowy Ośrodek Wsparcia Rolnictwa", key: "kowr" },
+  { src: mielczarek, alt: "Zakłady Mięsne Mielczarek", key: "mielczarek" },
+  { src: krus, alt: "Kasa Rolniczego Ubezpieczenia Społecznego", key: "krus" },
   { src: powiatPoznanski, alt: "Powiat Poznański", key: "powiat" },
   { src: muzeumSzreniawa, alt: "Muzeum Narodowe Rolnictwa i Przemysłu Rolno-Spożywczego w Szreniawie", key: "muzeum" },
+  { src: instytutWitosa, alt: "Instytut Witosa", key: "instytut-witosa" },
 ];
 ---
 
@@ -73,13 +83,21 @@ const partnerzy = [
     <li data-key="mon">Wiceprezesa Rady Ministrów, Ministra Obrony Narodowej Władysława Kosiniaka-Kamysza</li>
     <li data-key="msit">Ministra Sportu i Turystyki Jakuba Rutnickiego</li>
     <li data-key="mrirw">Ministra Rolnictwa i Rozwoju Wsi Stefana Krajewskiego</li>
+    <li data-key="arimr">Agencji Restrukturyzacji i Modernizacji Rolnictwa</li>
     <li data-key="marszalek">Marszałka Województwa Wielkopolskiego Marka Woźniaka</li>
     <li data-key="starosta">Starosty Poznańskiego Jana Grabkowskiego</li>
   </ul>
   <div class="partners__grid">
     {honorowyPatronat.map((logo) => (
-      <div class:list={["partners__item", { "partners__item--marszalek": logo.key === "marszalek" }]} data-key={logo.key}>
-        <Image src={logo.src} alt={logo.alt} width={logo.key === "marszalek" ? 270 : 210} />
+      <div
+        class:list={[
+          "partners__item",
+          { "partners__item--marszalek": logo.key === "marszalek" },
+          { "partners__item--arimr": logo.key === "arimr" },
+        ]}
+        data-key={logo.key}
+      >
+        <Image src={logo.src} alt={logo.alt} width={logo.key === "marszalek" ? 270 : logo.key === "arimr" ? 270 : 210} />
       </div>
     ))}
   </div>
@@ -105,9 +123,13 @@ const partnerzy = [
     <li data-key="powiat">Powiat Poznański</li>
     <li data-key="gmina-steszew">Gmina Stęszew</li>
     <li data-key="gmina-komorniki">Gmina Komorniki</li>
+    <li data-key="kowr">Krajowy Ośrodek Wsparcia Rolnictwa</li>
+    <li data-key="mielczarek">Zakłady Mięsne Mielczarek</li>
+    <li data-key="krus">Kasa Rolniczego Ubezpieczenia Społecznego</li>
     <li data-key="muzeum">Muzeum Narodowe Rolnictwa i Przemysłu Rolno-Spożywczego w Szreniawie</li>
     <li data-key="radio-poznan">Radio Poznań</li>
     <li data-key="tvp3">TVP Poznań</li>
+    <li data-key="instytut-witosa">Instytut Witosa</li>
     <li>Powiatowe Zrzeszenie LZS w Wolsztynie</li>
     <li>Rady Sołeckie</li>
     <li>Koła Gospodyń Wiejskich</li>

@@ -7,6 +7,7 @@ import lzs80Lat from "../assets/logo/LOGO_80 lecia.jpg";
 import mon from "../assets/sponsors/orzeł_mon_logo.png";
 import msit from "../assets/sponsors/MSiT Nowe.png";
 import mrirw from "../assets/sponsors/MRiRW.png";
+import arimr from "../assets/sponsors/ARiMR_logo_PODSTAWOWE.jpg";
 import marszalek from "../assets/sponsors/marszalek-wielkopolskie.png";
 import starostaPoznanski from "../assets/sponsors/powiat-poznanski-jan-grabowski-starosta-poznanski.png";
 import radioPoznan from "../assets/sponsors/radio-poznan.png";
@@ -14,8 +15,12 @@ import tvp3 from "../assets/sponsors/TVP3_Poznan_podst-1.png";
 
 import gminaSteszew from "../assets/sponsors/Gmina Stęszew.png";
 import gminaKomorniki from "../assets/sponsors/herb_Komorniki (1).jpg";
+import kowr from "../assets/sponsors/logo_KOWR_skrot.png";
+import mielczarek from "../assets/sponsors/Zakłady Mięsne Mielczarek.jpg";
+import krus from "../assets/sponsors/Logo_KRUS_kontra-1.png";
 import powiatPoznanski from "../assets/sponsors/herb powiat poznański.jpg";
 import muzeumSzreniawa from "../assets/sponsors/logo_muzeum_h125.png";
+import instytutWitosa from "../assets/sponsors/Instytut Witosa.png";
 
 const logos = [
   { src: lzsLogo, alt: "Ludowe Zespoły Sportowe" },
@@ -23,12 +28,17 @@ const logos = [
   { src: mon, alt: "Ministerstwo Obrony Narodowej" },
   { src: msit, alt: "Ministerstwo Sportu i Turystyki" },
   { src: mrirw, alt: "Ministerstwo Rolnictwa i Rozwoju Wsi" },
+  { src: arimr, alt: "Agencja Restrukturyzacji i Modernizacji Rolnictwa" },
   { src: marszalek, alt: "Marszałek Województwa Wielkopolskiego" },
   { src: starostaPoznanski, alt: "Starosta Poznański" },
   { src: gminaSteszew, alt: "Gmina Stęszew" },
   { src: gminaKomorniki, alt: "Gmina Komorniki" },
+  { src: kowr, alt: "Krajowy Ośrodek Wsparcia Rolnictwa" },
+  { src: mielczarek, alt: "Zakłady Mięsne Mielczarek" },
+  { src: krus, alt: "Kasa Rolniczego Ubezpieczenia Społecznego" },
   { src: powiatPoznanski, alt: "Powiat Poznański" },
   { src: muzeumSzreniawa, alt: "Muzeum Narodowe Rolnictwa i Przemysłu Rolno-Spożywczego w Szreniawie" },
+  { src: instytutWitosa, alt: "Instytut Witosa" },
   { src: radioPoznan, alt: "Radio Poznań" },
   { src: tvp3, alt: "TVP3 Poznań" },
 ];
@@ -43,12 +53,13 @@ const logos = [
           "partners-strip__item",
           { "partners-strip__item--muzeum": logo.src === muzeumSzreniawa },
           { "partners-strip__item--marszalek": logo.src === marszalek },
+          { "partners-strip__item--arimr": logo.src === arimr },
         ]}
       >
         <Image
           src={logo.src}
           alt={logo.alt}
-          width={logo.src === muzeumSzreniawa ? 300 : logo.src === marszalek ? 250 : 190}
+          width={logo.src === muzeumSzreniawa ? 300 : logo.src === marszalek || logo.src === arimr ? 250 : 190}
         />
       </div>
     ))}
