@@ -1408,6 +1408,11 @@ table.admin-table td {
   max-height: 140px;
 }
 
+.partners__item--samorzad img {
+  max-width: 280px;
+  max-height: 150px;
+}
+
 /* Homepage all-logos strip */
 
 .partners-strip {
@@ -1449,6 +1454,11 @@ table.admin-table td {
 }
 
 .partners-strip__item--arimr img {
+  max-width: 250px;
+  max-height: 130px;
+}
+
+.partners-strip__item--samorzad img {
   max-width: 250px;
   max-height: 130px;
 }

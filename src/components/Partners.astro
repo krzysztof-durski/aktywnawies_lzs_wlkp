@@ -21,6 +21,7 @@ import powiatPoznanski from "../assets/sponsors/herb powiat poznański.jpg";
 import muzeumSzreniawa from "../assets/sponsors/logo_muzeum_h125.png";
 import tvp3 from "../assets/sponsors/TVP3_Poznan_podst-1.png";
 import instytutWitosa from "../assets/sponsors/Instytut Witosa.png";
+import samorzadWojewodztwa from "../assets/sponsors/Samorzad Wojewodztwa Wielkopolskiego.jpg";
 
 // `key` links a logo to its matching written-list entry (in this section or
 // another) so hovering either one can highlight both — omitted where a logo
@@ -44,11 +45,11 @@ const patronatMedialny = [
   { src: tvp3, alt: "TVP3 Poznań", key: "tvp3" },
 ];
 
-// Only the four sponsors without a logo shown anywhere else on the page get
-// one here — Ministerstwo Sportu i Turystyki, Ministerstwo Rolnictwa,
-// Samorząd Województwa Wielkopolskiego (no dedicated logo at all), Radio
-// Poznań and TVP Poznań are already pictured above, so their keys still
-// cross-highlight those lines without repeating the image.
+// Most of these sponsors' logos already appear in an earlier section — their
+// `data-key` here still cross-highlights that line without repeating the
+// image. Samorząd Województwa Wielkopolskiego reuses the "marszalek" key: its
+// own dedicated logo lives here, but hovering it (or the matching text line)
+// also highlights the Honorowy Patronat Marszałek logo, the same institution.
 const partnerzy = [
   { src: gminaSteszew, alt: "Gmina Stęszew", key: "gmina-steszew" },
   { src: gminaKomorniki, alt: "Gmina Komorniki", key: "gmina-komorniki" },
@@ -58,6 +59,7 @@ const partnerzy = [
   { src: powiatPoznanski, alt: "Powiat Poznański", key: "powiat" },
   { src: muzeumSzreniawa, alt: "Muzeum Narodowe Rolnictwa i Przemysłu Rolno-Spożywczego w Szreniawie", key: "muzeum" },
   { src: instytutWitosa, alt: "Instytut Witosa", key: "instytut-witosa" },
+  { src: samorzadWojewodztwa, alt: "Samorząd Województwa Wielkopolskiego", key: "marszalek" },
 ];
 ---
 
@@ -137,8 +139,15 @@ const partnerzy = [
   </ul>
   <div class="partners__grid">
     {partnerzy.map((logo) => (
-      <div class:list={["partners__item", { "partners__item--muzeum": logo.key === "muzeum" }]} data-key={logo.key}>
-        <Image src={logo.src} alt={logo.alt} width={logo.key === "muzeum" ? 320 : 210} />
+      <div
+        class:list={[
+          "partners__item",
+          { "partners__item--muzeum": logo.key === "muzeum" },
+          { "partners__item--samorzad": logo.src === samorzadWojewodztwa },
+        ]}
+        data-key={logo.key}
+      >
+        <Image src={logo.src} alt={logo.alt} width={logo.key === "muzeum" ? 320 : logo.src === samorzadWojewodztwa ? 280 : 210} />
       </div>
     ))}
   </div>

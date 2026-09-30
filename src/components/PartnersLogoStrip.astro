@@ -21,6 +21,7 @@ import krus from "../assets/sponsors/Logo_KRUS_kontra-1.png";
 import powiatPoznanski from "../assets/sponsors/herb powiat poznański.jpg";
 import muzeumSzreniawa from "../assets/sponsors/logo_muzeum_h125.png";
 import instytutWitosa from "../assets/sponsors/Instytut Witosa.png";
+import samorzadWojewodztwa from "../assets/sponsors/Samorzad Wojewodztwa Wielkopolskiego.jpg";
 
 const logos = [
   { src: lzsLogo, alt: "Ludowe Zespoły Sportowe" },
@@ -30,6 +31,7 @@ const logos = [
   { src: mrirw, alt: "Ministerstwo Rolnictwa i Rozwoju Wsi" },
   { src: arimr, alt: "Agencja Restrukturyzacji i Modernizacji Rolnictwa" },
   { src: marszalek, alt: "Marszałek Województwa Wielkopolskiego" },
+  { src: samorzadWojewodztwa, alt: "Samorząd Województwa Wielkopolskiego" },
   { src: starostaPoznanski, alt: "Starosta Poznański" },
   { src: gminaSteszew, alt: "Gmina Stęszew" },
   { src: gminaKomorniki, alt: "Gmina Komorniki" },
@@ -54,12 +56,19 @@ const logos = [
           { "partners-strip__item--muzeum": logo.src === muzeumSzreniawa },
           { "partners-strip__item--marszalek": logo.src === marszalek },
           { "partners-strip__item--arimr": logo.src === arimr },
+          { "partners-strip__item--samorzad": logo.src === samorzadWojewodztwa },
         ]}
       >
         <Image
           src={logo.src}
           alt={logo.alt}
-          width={logo.src === muzeumSzreniawa ? 300 : logo.src === marszalek || logo.src === arimr ? 250 : 190}
+          width={
+            logo.src === muzeumSzreniawa
+              ? 300
+              : logo.src === marszalek || logo.src === arimr || logo.src === samorzadWojewodztwa
+                ? 250
+                : 190
+          }
         />
       </div>
     ))}
